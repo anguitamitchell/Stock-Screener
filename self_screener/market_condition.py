@@ -23,14 +23,14 @@ def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> Market
     dollar_bars = fetch_price_history("UUP", refresh=refresh)
     treasury_yield_bars = fetch_price_history("^TNX", refresh=refresh)
     demark = evaluate_demark(symbol, bars)
-    structural = evaluate_structural_weakness(equal_weight_bars, bars)
+    participation = evaluate_market_participation(equal_weight_bars, bars)
     technology = evaluate_technology_support(tech_bars, bars)
     defensive = evaluate_defensive_rotation(utilities_bars, staples_bars, bars)
     credit = evaluate_credit_risk(high_yield_bars, investment_grade_bars)
     shock = evaluate_dollar_yield_shock(dollar_bars, treasury_yield_bars)
     overall_score, overall_regime, summary = _combine_market_signals(
         demark,
-        structural,
+        participation,
         technology,
         defensive,
         credit,
@@ -44,7 +44,7 @@ def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> Market
         overall_score=overall_score,
         summary=summary,
         demark=demark,
-        structural_weakness=structural,
+        structural_weakness=participation,
         technology_support=technology,
         defensive_rotation=defensive,
         credit_risk=credit,
@@ -58,7 +58,7 @@ def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> Market
 
 def _combine_market_signals(
     demark: DeMarkSignal,
-    structural: MarketSignal,
+    participation: MarketSignal,
     technology: MarketSignal,
     defensive: MarketSignal,
     credit: MarketSignal,
@@ -66,8 +66,8 @@ def _combine_market_signals(
 ):
     score = round(
         (demark.score * 0.28)
-        + (structural.score * 0.20)
-        + (technology.score * 0.20)
+        + (participation.score * 0.10)
+        + (technology.score * 0.30)
         + (defensive.score * 0.12)
         + (credit.score * 0.12)
         + (shock.score * 0.08),
@@ -82,66 +82,58 @@ def _combine_market_signals(
 
     summary = (
         f"Overall market condition is {regime}: DeMark is {demark.regime} "
-        f"while structural participation is {structural.regime}, technology support is {technology.regime}, "
+        f"while market participation is {participation.regime}, technology support is {technology.regime}, "
         f"defensive rotation is {defensive.regime}, credit risk is {credit.regime}, "
         f"and dollar/yield shock is {shock.regime}."
     )
     return score, regime, summary
 
 
-def evaluate_structural_weakness(equal_weight_bars: List[PriceBar], cap_weight_bars: List[PriceBar]) -> MarketSignal:
+def evaluate_market_participation(equal_weight_bars: List[PriceBar], cap_weight_bars: List[PriceBar]) -> MarketSignal:
     ratio_values = _aligned_close_ratios(equal_weight_bars, cap_weight_bars)
     if len(ratio_values) < 200:
         return MarketSignal(
-            name="RSP/SPY structural participation",
+            name="RSP/SPY market participation",
             score=50.0,
             regime="neutral",
-            reasons=["Structural weakness signal needs at least 200 aligned trading days."],
+            reasons=["Market participation needs at least 200 aligned trading days for RSP/SPY."],
             metrics={},
         )
 
     current_ratio = ratio_values[-1]
-    sma_50 = _average(ratio_values[-50:])
-    sma_200 = _average(ratio_values[-200:])
-    return_20d = _period_return(ratio_values, 20)
-    return_60d = _period_return(ratio_values, 60)
+    baseline_ratio = ratio_values[-200]
+    normalized_ratio = current_ratio / baseline_ratio if baseline_ratio else 1.0
+    participation_return = (normalized_ratio - 1.0) * 100
+    score = round(max(0.0, min(100.0, 50.0 + (participation_return / 6.0) * 50.0)), 1)
 
-    score = 50.0
-    score += _scaled_component(_ratio_percent(current_ratio, sma_50), full_at=2, floor_at=-2, weight=18)
-    score += _scaled_component(_ratio_percent(current_ratio, sma_200), full_at=4, floor_at=-4, weight=22)
-    score += _scaled_component(return_20d, full_at=2, floor_at=-2, weight=15)
-    score += _scaled_component(return_60d, full_at=4, floor_at=-4, weight=15)
-    score -= 35.0
-    score = round(max(0.0, min(100.0, score)), 1)
-
-    if score >= 60:
+    if normalized_ratio > 1:
         regime = "bullish"
-    elif score <= 40:
+    elif normalized_ratio < 1:
         regime = "bearish"
     else:
         regime = "neutral"
 
     reasons = [
-        f"RSP/SPY is {_format_ratio(_ratio_percent(current_ratio, sma_50))} vs its 50D average.",
-        f"RSP/SPY is {_format_ratio(_ratio_percent(current_ratio, sma_200))} vs its 200D average.",
-        f"Ratio trend: 1M {_format_ratio(return_20d)}, 3M {_format_ratio(return_60d)}.",
+        f"Normalized RSP/SPY is {normalized_ratio:.3f} versus a 1.000 baseline.",
+        "Above 1.000 means equal-weight S&P 500 participation is stronger than cap-weight SPY; below 1.000 means participation is weaker and bearish.",
     ]
 
     return MarketSignal(
-        name="RSP/SPY structural participation",
+        name="RSP/SPY market participation",
         score=score,
         regime=regime,
         reasons=reasons,
         metrics={
             "current_ratio": round(current_ratio, 6),
-            "sma_50": round(sma_50, 6) if sma_50 is not None else None,
-            "sma_200": round(sma_200, 6) if sma_200 is not None else None,
-            "return_20d_percent": return_20d,
-            "return_60d_percent": return_60d,
-            "current_vs_50d_percent": _ratio_percent(current_ratio, sma_50),
-            "current_vs_200d_percent": _ratio_percent(current_ratio, sma_200),
+            "baseline_ratio": round(baseline_ratio, 6),
+            "normalized_ratio": round(normalized_ratio, 6),
+            "participation_return_percent": round(participation_return, 2),
         },
     )
+
+
+def evaluate_structural_weakness(equal_weight_bars: List[PriceBar], cap_weight_bars: List[PriceBar]) -> MarketSignal:
+    return evaluate_market_participation(equal_weight_bars, cap_weight_bars)
 
 
 def evaluate_technology_support(tech_bars: List[PriceBar], benchmark_bars: List[PriceBar]) -> MarketSignal:

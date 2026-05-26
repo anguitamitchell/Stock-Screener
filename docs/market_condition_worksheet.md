@@ -18,19 +18,21 @@ Implemented first because it is mechanical and can be calculated from daily OHLC
 
 Important note: this is a practical DeMark-style implementation, not a licensed reproduction of proprietary Bloomberg/DeMark analytics.
 
-## Layer 2: Structural Market Weakness
+## Layer 2: Market Participation
 
 Reality vs. narrative: cap-weighted indexes can rise while the average stock weakens.
 
 Implemented metric:
 
-- `RSP / SPY` trend
+- Normalized `RSP / SPY`
 
 Current rule:
 
-- Bullish: ratio above its 50D and 200D averages with positive 1M / 3M trend
-- Neutral: mixed ratio trend
-- Bearish: ratio below its 50D and 200D averages with negative 1M / 3M trend
+- Bullish: normalized `RSP / SPY` is above `1.000`
+- Neutral: normalized `RSP / SPY` is exactly `1.000`
+- Bearish: normalized `RSP / SPY` is below `1.000`
+
+Implementation note: the raw ETF share-price ratio is normalized to `1.000` at the start of the 200-trading-day lookback so the signal measures relative participation, not the absolute difference between ETF share prices.
 
 ## Layer 3: Sentiment Extremes
 

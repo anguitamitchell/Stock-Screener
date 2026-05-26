@@ -2261,7 +2261,7 @@ APP_HTML = r"""<!doctype html>
               <span class="${toneClass(item.overall_regime)}">${escapeHtml(item.overall_regime || "neutral")}</span>
               <div class="history-signals">
                 <span>D ${fmt(item.demark?.score)}</span>
-                <span>S ${fmt(item.structure?.score)}</span>
+                <span>P ${fmt(item.structure?.score)}</span>
                 <span>T ${fmt(item.tech?.score)}</span>
                 <span>C ${fmt(item.credit?.score)}</span>
               </div>
@@ -2285,12 +2285,12 @@ APP_HTML = r"""<!doctype html>
         },
         {
           key: "structure",
-          label: "Structure",
+          label: "Market Participation",
           score: market.structural_weakness.score,
           regime: market.structural_weakness.regime,
           signal: market.structural_weakness,
-          weight: "20%",
-          method: "Market participation score using RSP/SPY. Equal-weight strength versus cap-weight strength is bullish; a falling ratio means fewer stocks are carrying the index."
+          weight: "10%",
+          method: "Market participation score using normalized RSP/SPY. Above 1.000 means equal-weight participation is stronger than cap-weight SPY and is bullish; below 1.000 means participation is weaker and is bearish."
         },
         {
           key: "tech",
@@ -2298,7 +2298,7 @@ APP_HTML = r"""<!doctype html>
           score: market.technology_support.score,
           regime: market.technology_support.regime,
           signal: market.technology_support,
-          weight: "20%",
+          weight: "30%",
           method: "Technology leadership score using QQQ trend, QQQ moving averages, and QQQ relative strength versus SPY."
         },
         {
