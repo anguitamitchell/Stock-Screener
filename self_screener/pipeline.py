@@ -29,7 +29,7 @@ def screen_etf(
     holdings = fetch_holdings(symbol, refresh=refresh)
     selected_holdings = holdings[:limit] if limit else holdings
     benchmark_price = fetch_price_snapshot(symbol, refresh=refresh) if include_prices else None
-    market_condition = build_market_condition("SPY", refresh=refresh) if include_market else None
+    market_condition = build_market_condition(symbol, refresh=refresh) if include_market else None
 
     rated = []
     for holding in selected_holdings:
