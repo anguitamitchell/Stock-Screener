@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "signaldeck-screener"
+version = "0.1.0"
+description = "Local ETF narrative, technical, and market-condition screening dashboard."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+build = ["pyinstaller>=6.0"]
+
+[project.scripts]
+signaldeck = "self_screener.cli:main"
+
+[tool.setuptools]
+packages = ["self_screener", "self_screener.providers", "self_screener.screeners"]

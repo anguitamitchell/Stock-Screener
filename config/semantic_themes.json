@@ -1,0 +1,258 @@
+{
+  "themes": {
+    "millennial_spending_power": {
+      "label": "Millennial spending power",
+      "weight": 18
+    },
+    "labor_supply_advantage": {
+      "label": "Labor-supply advantage",
+      "weight": 18
+    },
+    "enterprise_ai_leadership": {
+      "label": "Enterprise AI leadership",
+      "weight": 26
+    },
+    "grid_data_center_demand": {
+      "label": "Grid and data-center demand",
+      "weight": 18
+    },
+    "energy_security_tailwinds": {
+      "label": "Energy-security tailwinds",
+      "weight": 20
+    }
+  },
+  "companies": {
+    "NVDA": {
+      "score": 95,
+      "themes": {
+        "enterprise_ai_leadership": "direct",
+        "grid_data_center_demand": "direct"
+      },
+      "notes": "Core AI accelerator and networking platform; direct beneficiary of AI data-center buildout."
+    },
+    "AAPL": {
+      "score": 55,
+      "themes": {
+        "millennial_spending_power": "direct"
+      },
+      "notes": "Premium consumer ecosystem with services, devices, wearables, and digital consumption exposure."
+    },
+    "MSFT": {
+      "score": 88,
+      "themes": {
+        "enterprise_ai_leadership": "direct",
+        "labor_supply_advantage": "direct",
+        "grid_data_center_demand": "direct"
+      },
+      "notes": "Cloud, enterprise software, AI tooling, productivity automation, and AI infrastructure scale."
+    },
+    "AMZN": {
+      "score": 90,
+      "themes": {
+        "millennial_spending_power": "direct",
+        "labor_supply_advantage": "direct",
+        "enterprise_ai_leadership": "direct",
+        "grid_data_center_demand": "direct"
+      },
+      "notes": "E-commerce convenience, AWS AI infrastructure, logistics automation, and large-scale data-center demand."
+    },
+    "GOOGL": {
+      "score": 82,
+      "themes": {
+        "millennial_spending_power": "direct",
+        "enterprise_ai_leadership": "direct",
+        "grid_data_center_demand": "direct"
+      },
+      "notes": "Search, YouTube, cloud, AI models, data infrastructure, and consumer internet ecosystem."
+    },
+    "GOOG": {
+      "score": 82,
+      "themes": {
+        "millennial_spending_power": "direct",
+        "enterprise_ai_leadership": "direct",
+        "grid_data_center_demand": "direct"
+      },
+      "notes": "Search, YouTube, cloud, AI models, data infrastructure, and consumer internet ecosystem."
+    },
+    "AVGO": {
+      "score": 85,
+      "themes": {
+        "enterprise_ai_leadership": "direct",
+        "grid_data_center_demand": "direct"
+      },
+      "notes": "AI networking, custom silicon, infrastructure software, and data-center connectivity exposure."
+    },
+    "META": {
+      "score": 78,
+      "themes": {
+        "millennial_spending_power": "direct",
+        "enterprise_ai_leadership": "direct",
+        "labor_supply_advantage": "indirect",
+        "grid_data_center_demand": "direct"
+      },
+      "notes": "Social platforms, AI-driven advertising/productivity, models, and major AI infrastructure demand."
+    },
+    "TSLA": {
+      "score": 75,
+      "themes": {
+        "millennial_spending_power": "direct",
+        "labor_supply_advantage": "direct",
+        "grid_data_center_demand": "direct",
+        "energy_security_tailwinds": "indirect"
+      },
+      "notes": "EVs, automation, energy storage, charging infrastructure, and domestic energy/electrification themes."
+    },
+    "BRK.B": {
+      "score": 50,
+      "themes": {
+        "energy_security_tailwinds": "indirect",
+        "grid_data_center_demand": "indirect"
+      },
+      "notes": "Diversified ownership with energy, utility, rail, industrial, and infrastructure exposure."
+    },
+    "LLY": {
+      "score": 58,
+      "themes": {
+        "millennial_spending_power": "indirect",
+        "labor_supply_advantage": "indirect"
+      },
+      "notes": "Wellness and healthcare demand, with productivity leverage from scale and advanced manufacturing."
+    },
+    "JPM": {
+      "score": 45,
+      "themes": {
+        "labor_supply_advantage": "indirect"
+      },
+      "notes": "Scale financial platform with technology and automation leverage."
+    },
+    "MU": {
+      "score": 76,
+      "themes": {
+        "enterprise_ai_leadership": "direct",
+        "grid_data_center_demand": "direct"
+      },
+      "notes": "Memory demand tied to AI servers, data centers, and compute intensity."
+    },
+    "XOM": {
+      "score": 72,
+      "themes": {
+        "energy_security_tailwinds": "direct",
+        "grid_data_center_demand": "indirect"
+      },
+      "notes": "Energy security, U.S. production advantage, industrial demand, and power-adjacent tailwinds."
+    },
+    "AMD": {
+      "score": 78,
+      "themes": {
+        "enterprise_ai_leadership": "direct",
+        "grid_data_center_demand": "direct"
+      },
+      "notes": "AI accelerators, CPUs, and data-center compute exposure."
+    },
+    "WMT": {
+      "score": 58,
+      "themes": {
+        "millennial_spending_power": "direct",
+        "labor_supply_advantage": "direct"
+      },
+      "notes": "Convenience, omnichannel retail, logistics scale, automation, and household spending exposure."
+    },
+    "V": {
+      "score": 56,
+      "themes": {
+        "millennial_spending_power": "direct",
+        "labor_supply_advantage": "direct"
+      },
+      "notes": "Digital payments and high-margin transaction network with operating leverage."
+    },
+    "JNJ": {
+      "score": 35,
+      "themes": {
+        "labor_supply_advantage": "indirect"
+      },
+      "notes": "Healthcare scale, medtech, and productivity leverage."
+    },
+    "INTC": {
+      "score": 70,
+      "themes": {
+        "enterprise_ai_leadership": "direct",
+        "grid_data_center_demand": "direct",
+        "energy_security_tailwinds": "direct"
+      },
+      "notes": "Semiconductor supply chain, domestic manufacturing, AI compute, and reshoring exposure."
+    },
+    "COST": {
+      "score": 65,
+      "themes": {
+        "millennial_spending_power": "direct",
+        "labor_supply_advantage": "direct"
+      },
+      "notes": "Membership retail, value convenience, and operating efficiency."
+    },
+    "CSCO": {
+      "score": 68,
+      "themes": {
+        "enterprise_ai_leadership": "direct",
+        "grid_data_center_demand": "direct"
+      },
+      "notes": "Networking, security, and enterprise infrastructure tied to AI/data-center traffic."
+    },
+    "MA": {
+      "score": 56,
+      "themes": {
+        "millennial_spending_power": "direct",
+        "labor_supply_advantage": "direct"
+      },
+      "notes": "Digital payments and scalable transaction network."
+    },
+    "CAT": {
+      "score": 68,
+      "themes": {
+        "grid_data_center_demand": "direct",
+        "energy_security_tailwinds": "direct",
+        "labor_supply_advantage": "indirect"
+      },
+      "notes": "Infrastructure, power systems, mining/energy equipment, and reshoring buildout."
+    },
+    "ABBV": {
+      "score": 35,
+      "themes": {
+        "labor_supply_advantage": "indirect"
+      },
+      "notes": "Healthcare scale and specialized pharmaceutical productivity."
+    },
+    "NFLX": {
+      "score": 50,
+      "themes": {
+        "millennial_spending_power": "direct",
+        "labor_supply_advantage": "indirect"
+      },
+      "notes": "Streaming consumption, global digital entertainment, and scalable content distribution."
+    },
+    "PANW": {
+      "score": 49.2,
+      "themes": {
+        "labor_supply_advantage": "direct",
+        "enterprise_ai_leadership": "direct",
+        "grid_data_center_demand": "direct"
+      },
+      "notes": "PANW is rated Hold because it matches Labor-supply advantage, Enterprise AI leadership, Grid and data-center demand, has high-certainty research, and its technical setup is bullish. Preferred entry is $212.17-$223.50, with risk exit below $208.21. Current market backdrop is neutral.",
+      "confidence": 1.0,
+      "research_status": "curated",
+      "source": "Promoted from local review queue"
+    },
+    "PWR": {
+      "score": 76.1,
+      "themes": {
+        "labor_supply_advantage": "direct",
+        "enterprise_ai_leadership": "direct",
+        "grid_data_center_demand": "direct",
+        "energy_security_tailwinds": "direct"
+      },
+      "notes": "PWR is rated Buy because it matches Labor-supply advantage, Enterprise AI leadership, Grid and data-center demand, has high-certainty research, and its technical setup is bullish. Preferred entry is $692.03-$721.31, with risk exit below $655.43. Current market backdrop is neutral.",
+      "confidence": 1.0,
+      "research_status": "curated",
+      "source": "Promoted from local review queue"
+    }
+  }
+}
