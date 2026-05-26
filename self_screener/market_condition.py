@@ -19,14 +19,14 @@ def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> Market
     utilities_bars = fetch_price_history("XLU", refresh=refresh)
     staples_bars = fetch_price_history("XLP", refresh=refresh)
     high_yield_bars = fetch_price_history("HYG", refresh=refresh)
-    investment_grade_bars = fetch_price_history("LQD", refresh=refresh)
+    aggregate_bond_bars = fetch_price_history("AGG", refresh=refresh)
     dollar_bars = fetch_price_history("UUP", refresh=refresh)
     treasury_yield_bars = fetch_price_history("^TNX", refresh=refresh)
     demark = evaluate_demark(symbol, bars)
     participation = evaluate_market_participation(equal_weight_bars, bars)
     technology = evaluate_technology_support(tech_bars, bars)
     defensive = evaluate_defensive_rotation(utilities_bars, staples_bars, bars)
-    credit = evaluate_credit_risk(high_yield_bars, investment_grade_bars)
+    credit = evaluate_credit_risk(high_yield_bars, aggregate_bond_bars)
     shock = evaluate_dollar_yield_shock(dollar_bars, treasury_yield_bars)
     overall_score, overall_regime, summary = _combine_market_signals(
         demark,
@@ -252,59 +252,41 @@ def evaluate_defensive_rotation(
     )
 
 
-def evaluate_credit_risk(high_yield_bars: List[PriceBar], investment_grade_bars: List[PriceBar]) -> MarketSignal:
-    credit_ratio = _aligned_close_ratios(high_yield_bars, investment_grade_bars)
-    if len(credit_ratio) < 200:
+def evaluate_credit_risk(high_yield_bars: List[PriceBar], aggregate_bond_bars: List[PriceBar]) -> MarketSignal:
+    credit_ratio = _aligned_close_ratios(high_yield_bars, aggregate_bond_bars)
+    if not credit_ratio:
         return MarketSignal(
-            name="HYG/LQD credit risk",
+            name="HYG/AGG credit risk",
             score=50.0,
             regime="neutral",
-            reasons=["Credit risk signal needs at least 200 aligned trading days for HYG/LQD."],
+            reasons=["Credit risk signal needs current HYG and AGG closes."],
             metrics={},
         )
 
     current_ratio = credit_ratio[-1]
-    sma_50 = _average(credit_ratio[-50:])
-    sma_200 = _average(credit_ratio[-200:])
-    current_vs_50 = _ratio_percent(current_ratio, sma_50)
-    current_vs_200 = _ratio_percent(current_ratio, sma_200)
-    return_20d = _period_return(credit_ratio, 20)
-    return_60d = _period_return(credit_ratio, 60)
+    ratio_gap = current_ratio - 1.0
+    score = round(max(0.0, min(100.0, 50.0 - (ratio_gap * 50.0))), 1)
 
-    score = 50.0
-    score += _scaled_component(current_vs_50, full_at=1.5, floor_at=-1.5, weight=20)
-    score += _scaled_component(current_vs_200, full_at=3, floor_at=-3, weight=25)
-    score += _scaled_component(return_20d, full_at=1.5, floor_at=-1.5, weight=20)
-    score += _scaled_component(return_60d, full_at=3, floor_at=-3, weight=20)
-    score -= 35.0
-    score = round(max(0.0, min(100.0, score)), 1)
-
-    if score >= 60:
+    if current_ratio < 1:
         regime = "bullish"
-    elif score <= 40:
+    elif current_ratio > 1:
         regime = "bearish"
     else:
         regime = "neutral"
 
     reasons = [
-        f"HYG/LQD is {_format_ratio(current_vs_50)} vs its 50D average.",
-        f"HYG/LQD is {_format_ratio(current_vs_200)} vs its 200D average.",
-        f"Credit trend: 1M {_format_ratio(return_20d)}, 3M {_format_ratio(return_60d)}.",
+        f"Current HYG/AGG is {current_ratio:.3f}.",
+        "Below 1.000 is bullish for credit risk appetite; above 1.000 is bearish.",
     ]
 
     return MarketSignal(
-        name="HYG/LQD credit risk",
+        name="HYG/AGG credit risk",
         score=score,
         regime=regime,
         reasons=reasons,
         metrics={
             "current_ratio": round(current_ratio, 6),
-            "sma_50": round(sma_50, 6) if sma_50 is not None else None,
-            "sma_200": round(sma_200, 6) if sma_200 is not None else None,
-            "current_vs_50d_percent": current_vs_50,
-            "current_vs_200d_percent": current_vs_200,
-            "return_20d_percent": return_20d,
-            "return_60d_percent": return_60d,
+            "ratio_gap": round(ratio_gap, 6),
         },
     )
 

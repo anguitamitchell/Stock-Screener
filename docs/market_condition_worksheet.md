@@ -79,7 +79,7 @@ Reality vs. narrative: credit often warns before equities.
 
 Implemented metric:
 
-- `HYG / LQD` ratio as an ETF proxy
+- Current `HYG / AGG` ratio as an ETF proxy
 
 Future metric:
 
@@ -87,9 +87,9 @@ Future metric:
 
 Current rule:
 
-- Bullish: high yield outperforming investment grade and spreads stable/tightening
-- Neutral: mixed
-- Bearish: spreads widening or `HYG / LQD` breaking down
+- Bullish: current `HYG / AGG` is below `1.000`
+- Neutral: current `HYG / AGG` is exactly `1.000`
+- Bearish: current `HYG / AGG` is above `1.000`
 
 ## Layer 7: Defensive Rotation
 

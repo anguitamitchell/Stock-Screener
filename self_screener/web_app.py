@@ -2317,7 +2317,7 @@ APP_HTML = r"""<!doctype html>
           regime: market.credit_risk.regime,
           signal: market.credit_risk,
           weight: "12%",
-          method: "Credit risk score using HYG/LQD. High yield outperforming investment grade is treated as healthier risk appetite."
+          method: "Credit risk score using the current HYG/AGG ratio. Below 1.000 is bullish for credit risk appetite; above 1.000 is bearish."
         },
         {
           key: "dollarYield",
@@ -2480,6 +2480,7 @@ APP_HTML = r"""<!doctype html>
         .replaceAll("xlu", "XLU")
         .replaceAll("xlp", "XLP")
         .replaceAll("hyg", "HYG")
+        .replaceAll("agg", "AGG")
         .replaceAll("lqd", "LQD")
         .replaceAll("uup", "UUP")
         .replaceAll("tnx", "TNX");
