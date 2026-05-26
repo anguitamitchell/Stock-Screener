@@ -1,4 +1,5 @@
 import json
+import threading
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -94,6 +95,9 @@ class ScreenerRequestHandler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/review/clear":
             self._handle_clear_review()
+            return
+        if parsed.path == "/api/shutdown":
+            self._handle_shutdown()
             return
         self.send_error(404, "Not found")
 
@@ -318,6 +322,10 @@ class ScreenerRequestHandler(BaseHTTPRequestHandler):
                 "review_count": len(queue["items"]),
             }
         )
+
+    def _handle_shutdown(self) -> None:
+        self._send_json({"ok": True})
+        threading.Thread(target=self.server.shutdown, daemon=True).start()
 
     def _send_html(self, body: str) -> None:
         html = body.replace("__SUPPORTED_ETFS__", json.dumps(supported_etfs()))
@@ -667,6 +675,8 @@ APP_HTML = r"""<!doctype html>
     .rail {
       position: sticky;
       top: 0;
+      display: flex;
+      flex-direction: column;
       height: 100vh;
       padding: 20px 14px;
       border-right: 1px solid var(--line);
@@ -702,6 +712,20 @@ APP_HTML = r"""<!doctype html>
       color: var(--green);
       border-color: #3b452f;
       background: #171d12;
+    }
+
+    .rail-spacer {
+      flex: 1;
+    }
+
+    .rail-item.quit {
+      cursor: pointer;
+      color: var(--red);
+    }
+
+    .rail-item.quit:hover {
+      border-color: rgba(255, 101, 101, 0.46);
+      background: rgba(255, 101, 101, 0.10);
     }
 
     .app {
@@ -1843,6 +1867,8 @@ APP_HTML = r"""<!doctype html>
       <div class="rail-item">◇</div>
       <div class="rail-item">◎</div>
       <div class="rail-item">⌕</div>
+      <div class="rail-spacer"></div>
+      <button class="rail-item quit" id="quitAppButton" type="button" title="Quit SignalDeck">×</button>
     </nav>
 
     <main class="app">
@@ -2019,7 +2045,8 @@ APP_HTML = r"""<!doctype html>
       drawerTicker: document.getElementById("drawerTicker"),
       drawerName: document.getElementById("drawerName"),
       drawerContent: document.getElementById("drawerContent"),
-      drawerClose: document.getElementById("drawerClose")
+      drawerClose: document.getElementById("drawerClose"),
+      quit: document.getElementById("quitAppButton")
     };
 
     function fmt(value, digits = 1) {
@@ -3376,6 +3403,22 @@ APP_HTML = r"""<!doctype html>
     });
 
     els.refresh.addEventListener("click", () => runScreen(true));
+    els.quit.addEventListener("click", async () => {
+      if (!window.confirm("Quit SignalDeck?")) return;
+      els.status.textContent = "Closing SignalDeck...";
+      try {
+        await fetch("/api/shutdown", { method: "POST" });
+      } finally {
+        document.body.innerHTML = `
+          <div style="min-height:100vh;display:grid;place-items:center;padding:24px;background:#070807;color:#f1f4ec;font-family:Segoe UI,sans-serif;">
+            <div style="max-width:520px;text-align:center;">
+              <h1 style="margin:0 0 12px;font-size:42px;">SignalDeck is closed</h1>
+              <p style="color:#899184;line-height:1.5;">You can close this browser tab now. Double-click SignalDeck again whenever you want to reopen the dashboard.</p>
+            </div>
+          </div>
+        `;
+      }
+    });
     els.limit.addEventListener("change", () => {
       localStorage.setItem("signaldeck:lastLimit", els.limit.value);
     });

@@ -17,6 +17,7 @@ if (-not (Test-Path ".venv")) {
 & .\.venv\Scripts\pyinstaller.exe `
   --clean `
   --noconfirm `
+  --noconsole `
   --name $Name `
   --add-data "config;config" `
   --add-data "docs;docs" `

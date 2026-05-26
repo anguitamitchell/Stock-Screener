@@ -1,10 +1,28 @@
 # SignalDeck Windows Packaging
 
-This project is a local dashboard. The packaged Windows app starts a local server and opens:
+This project is a local dashboard. The packaged Windows app starts in the background and opens:
 
 ```text
 http://127.0.0.1:8765/
 ```
+
+## Best Option: Non-Technical User
+
+Give the user the full folder:
+
+```text
+dist\SignalDeck\
+```
+
+They only need to double-click:
+
+```text
+SignalDeck.exe
+```
+
+SignalDeck opens the dashboard in their browser automatically. They do not need PowerShell, Command Prompt, Python, or Git.
+
+To close the app, click the `×` button at the bottom of the left sidebar inside SignalDeck, then close the browser tab.
 
 ## Option 1: Run From Source
 
@@ -35,6 +53,8 @@ The app will be created at:
 ```text
 dist\SignalDeck\SignalDeck.exe
 ```
+
+This build is windowless, so it behaves like a normal desktop app instead of leaving a terminal window open.
 
 ## Deployment Folder
 

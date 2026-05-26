@@ -13,6 +13,19 @@ def _open_browser(host: str, port: int) -> None:
     webbrowser.open(f"http://{host}:{port}/")
 
 
+def _show_startup_error(message: str) -> None:
+    try:
+        import tkinter
+        from tkinter import messagebox
+
+        root = tkinter.Tk()
+        root.withdraw()
+        messagebox.showerror("SignalDeck could not start", message)
+        root.destroy()
+    except Exception:
+        print(message)
+
+
 def main() -> None:
     app_root = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
     os.chdir(app_root)
@@ -22,9 +35,7 @@ def main() -> None:
     try:
         run_server(host, port)
     except ServerStartupError as exc:
-        print(exc)
-        print("Press Enter to close this window.")
-        input()
+        _show_startup_error(str(exc))
 
 
 if __name__ == "__main__":
