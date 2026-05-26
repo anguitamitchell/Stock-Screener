@@ -1,15 +1,18 @@
 import csv
 import json
+import re
 import time
 import urllib.parse
 import urllib.request
 from dataclasses import asdict, dataclass
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Optional
 
 
 CACHE_DIR = Path("data") / "cache" / "macro"
 FRED_CSV_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv"
+GOVSPENDING_SERIES_URL = "https://govspending.org/series/{series_id}/"
 
 
 @dataclass(frozen=True)
@@ -36,7 +39,7 @@ def fetch_fred_observation(series_id: str, refresh: bool = False) -> FredObserva
             cached = _read_cache(cache_path)
             if cached.value is not None:
                 return cached
-        observation = FredObservation(series_id=normalized, error=str(exc))
+        return FredObservation(series_id=normalized, error=str(exc))
 
     _write_cache(cache_path, observation)
     return observation
@@ -51,16 +54,25 @@ def _fetch_latest_observation_with_retry(series_id: str, attempts: int = 3) -> F
             last_error = exc
             if attempt < attempts - 1:
                 time.sleep(0.75 * (attempt + 1))
-    raise last_error
+    try:
+        return _fetch_govspending_observation(series_id)
+    except Exception:
+        raise last_error
 
 
 def _fetch_latest_observation(series_id: str) -> FredObservation:
-    query = urllib.parse.urlencode({"id": series_id})
+    query = urllib.parse.urlencode(
+        {
+            "id": series_id,
+            "cosd": (date.today() - timedelta(days=120)).isoformat(),
+        }
+    )
     request = urllib.request.Request(
         f"{FRED_CSV_URL}?{query}",
         headers={
-            "User-Agent": "SignalDeck ETF Screener/0.1",
+            "User-Agent": "Mozilla/5.0 SignalDeck ETF Screener/0.1",
             "Accept": "text/csv",
+            "Connection": "close",
         },
     )
 
@@ -79,6 +91,35 @@ def _fetch_latest_observation(series_id: str) -> FredObservation:
         )
 
     raise ValueError(f"No valid observations returned for {series_id}.")
+
+
+def _fetch_govspending_observation(series_id: str) -> FredObservation:
+    request = urllib.request.Request(
+        GOVSPENDING_SERIES_URL.format(series_id=urllib.parse.quote(series_id)),
+        headers={
+            "User-Agent": "Mozilla/5.0 SignalDeck ETF Screener/0.1",
+            "Accept": "text/html",
+            "Connection": "close",
+        },
+    )
+
+    with urllib.request.urlopen(request, timeout=20) as response:
+        text = response.read().decode("utf-8", "ignore")
+
+    match = re.search(
+        r"As of ([A-Z][a-z]+ \d{1,2}, \d{4}).{0,180}?current .*? is (\d+(?:\.\d+)?) Percent",
+        text,
+        re.IGNORECASE | re.DOTALL,
+    )
+    if not match:
+        raise ValueError(f"No fallback observation found for {series_id}.")
+
+    return FredObservation(
+        series_id=series_id,
+        date=match.group(1),
+        value=round(float(match.group(2)), 4),
+        source="GovSpending mirror of FRED: ICE BofA US High Yield Index Option-Adjusted Spread",
+    )
 
 
 def _read_cache(path: Path) -> FredObservation:
