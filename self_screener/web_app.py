@@ -2280,7 +2280,7 @@ APP_HTML = r"""<!doctype html>
           score: market.demark.score,
           regime: market.demark.regime,
           signal: market.demark,
-          weight: "28%",
+          weight: "20%",
           method: "Exhaustion score using the current TD Setup count and TD Countdown count. A completed sell setup/countdown pressures the score lower; a completed buy setup/countdown supports the score."
         },
         {
@@ -2307,7 +2307,7 @@ APP_HTML = r"""<!doctype html>
           score: market.defensive_rotation.score,
           regime: market.defensive_rotation.regime,
           signal: market.defensive_rotation,
-          weight: "12%",
+          weight: "20%",
           method: "Risk-appetite score using XLU/SPY and XLP/SPY. Defensive sectors outperforming is treated as caution, so this signal is inverted."
         },
         {

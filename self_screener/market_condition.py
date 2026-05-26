@@ -68,10 +68,10 @@ def _combine_market_signals(
     shock: MarketSignal,
 ):
     score = round(
-        (demark.score * 0.28)
+        (demark.score * 0.20)
         + (participation.score * 0.10)
         + (technology.score * 0.30)
-        + (defensive.score * 0.12)
+        + (defensive.score * 0.20)
         + (credit.score * 0.12)
         + (shock.score * 0.08),
         1,
