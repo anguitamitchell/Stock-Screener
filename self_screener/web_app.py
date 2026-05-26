@@ -2326,7 +2326,7 @@ APP_HTML = r"""<!doctype html>
           regime: market.dollar_yield_shock.regime,
           signal: market.dollar_yield_shock,
           weight: "8%",
-          method: "Liquidity shock score using UUP and the 10Y yield proxy. A sharp dollar/yield rise is a headwind, so this signal is inverted."
+          method: "Dollar/yield score using DXY and the 10-year Treasury yield. DXY above 100 is bearish; 10-year yield above 4.5 is bearish. Both bearish makes the signal bearish, one bearish is neutral, and both bullish is bullish."
         }
       ];
     }
@@ -2485,6 +2485,7 @@ APP_HTML = r"""<!doctype html>
         .replaceAll("oas", "OAS")
         .replaceAll("fred", "FRED")
         .replaceAll("uup", "UUP")
+        .replaceAll("dxy", "DXY")
         .replaceAll("tnx", "TNX");
     }
 

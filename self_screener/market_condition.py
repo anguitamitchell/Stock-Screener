@@ -12,6 +12,8 @@ from self_screener.providers.yahoo_prices import fetch_price_history
 REPORT_DIR = Path("data") / "reports"
 HIGH_YIELD_OAS_SERIES_ID = "BAMLH0A0HYM2"
 HIGH_YIELD_OAS_THRESHOLD = 3.5
+DXY_THRESHOLD = 100.0
+TEN_YEAR_YIELD_THRESHOLD = 4.5
 
 
 def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> MarketConditionReport:
@@ -23,7 +25,7 @@ def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> Market
     utilities_bars = fetch_price_history("XLU", refresh=refresh)
     staples_bars = fetch_price_history("XLP", refresh=refresh)
     high_yield_oas = fetch_fred_observation(HIGH_YIELD_OAS_SERIES_ID, refresh=refresh)
-    dollar_bars = fetch_price_history("UUP", refresh=refresh)
+    dollar_bars = fetch_price_history("DX-Y.NYB", refresh=refresh)
     treasury_yield_bars = fetch_price_history("^TNX", refresh=refresh)
     demark = evaluate_demark(symbol, bars)
     participation = evaluate_market_participation(equal_weight_bars, spy_bars)
@@ -299,39 +301,36 @@ def evaluate_credit_risk(high_yield_oas: FredObservation) -> MarketSignal:
 def evaluate_dollar_yield_shock(dollar_bars: List[PriceBar], treasury_yield_bars: List[PriceBar]) -> MarketSignal:
     dollar_closes = _closes(dollar_bars)
     yield_closes = _closes(treasury_yield_bars)
-    if len(dollar_closes) < 60 or len(yield_closes) < 60:
+    if not dollar_closes or not yield_closes:
         return MarketSignal(
             name="Dollar/yield shock",
             score=50.0,
             regime="neutral",
-            reasons=["Dollar/yield shock needs at least 60 bars for UUP and ^TNX."],
+            reasons=["Dollar/yield shock needs current DXY and 10-year Treasury yield values."],
             metrics={},
         )
 
-    dollar_20d = _period_return(dollar_closes, 20)
-    dollar_60d = _period_return(dollar_closes, 60)
-    yield_20d = _period_return(yield_closes, 20)
-    yield_60d = _period_return(yield_closes, 60)
-    shock_20d = _average([dollar_20d, yield_20d])
-    shock_60d = _average([dollar_60d, yield_60d])
+    dxy = dollar_closes[-1]
+    ten_year_yield = yield_closes[-1]
+    dxy_bearish = dxy > DXY_THRESHOLD
+    yield_bearish = ten_year_yield > TEN_YEAR_YIELD_THRESHOLD
+    dxy_bullish = dxy < DXY_THRESHOLD
+    yield_bullish = ten_year_yield < TEN_YEAR_YIELD_THRESHOLD
 
-    score = 50.0
-    score += _inverted_scaled_component(shock_20d, full_at=-3, floor_at=5, weight=25)
-    score += _inverted_scaled_component(shock_60d, full_at=-5, floor_at=10, weight=25)
-    score -= 25.0
-    score = round(max(0.0, min(100.0, score)), 1)
-
-    if score >= 60:
+    if dxy_bullish and yield_bullish:
+        score = 100.0
         regime = "bullish"
-    elif score <= 40:
+    elif dxy_bearish and yield_bearish:
+        score = 0.0
         regime = "bearish"
     else:
+        score = 50.0
         regime = "neutral"
 
     reasons = [
-        f"UUP trend: 1M {_format_ratio(dollar_20d)}, 3M {_format_ratio(dollar_60d)}.",
-        f"10Y yield proxy trend: 1M {_format_ratio(yield_20d)}, 3M {_format_ratio(yield_60d)}.",
-        f"Combined shock pressure: 1M {_format_ratio(shock_20d)}, 3M {_format_ratio(shock_60d)}.",
+        f"DXY is {dxy:.2f}; above {DXY_THRESHOLD:.0f} is bearish and below {DXY_THRESHOLD:.0f} is bullish.",
+        f"10-year Treasury yield is {ten_year_yield:.2f}; above {TEN_YEAR_YIELD_THRESHOLD:.1f} is bearish and below {TEN_YEAR_YIELD_THRESHOLD:.1f} is bullish.",
+        "Both bearish makes this signal bearish; one bearish makes it neutral; both bullish makes it bullish.",
     ]
 
     return MarketSignal(
@@ -340,12 +339,10 @@ def evaluate_dollar_yield_shock(dollar_bars: List[PriceBar], treasury_yield_bars
         regime=regime,
         reasons=reasons,
         metrics={
-            "uup_return_20d_percent": dollar_20d,
-            "uup_return_60d_percent": dollar_60d,
-            "tnx_return_20d_percent": yield_20d,
-            "tnx_return_60d_percent": yield_60d,
-            "combined_shock_20d_percent": shock_20d,
-            "combined_shock_60d_percent": shock_60d,
+            "dxy": round(dxy, 4),
+            "dxy_threshold": DXY_THRESHOLD,
+            "ten_year_yield": round(ten_year_yield, 4),
+            "ten_year_yield_threshold": TEN_YEAR_YIELD_THRESHOLD,
         },
     )
 

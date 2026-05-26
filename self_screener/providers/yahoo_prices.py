@@ -244,6 +244,8 @@ def _indexed_value(values: List, index: int) -> Optional[float]:
 
 
 def _normalize_ticker(ticker: str) -> str:
+    if ticker.upper() == "DX-Y.NYB":
+        return "DX-Y.NYB"
     return ticker.upper().replace(".", "-")
 
 

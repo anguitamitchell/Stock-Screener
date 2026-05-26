@@ -108,14 +108,16 @@ Reality vs. narrative: a sharp dollar and yield rally can drain liquidity from r
 
 Implemented metrics:
 
-- `UUP` as a tradable dollar proxy
-- `^TNX` as the 10-year Treasury yield proxy
+- `DXY` for the U.S. Dollar Index
+- `^TNX` for the 10-year Treasury yield
 
 Current rule:
 
-- Bullish: dollar and yields stable
-- Neutral: one pressure rising
-- Bearish: both rising sharply together
+- DXY above `100` is bearish; below `100` is bullish
+- 10-year Treasury yield above `4.5` is bearish; below `4.5` is bullish
+- Both bearish: bearish
+- One bearish: neutral
+- Both bullish: bullish
 
 ## Layer 9: Fed / Liquidity
 
