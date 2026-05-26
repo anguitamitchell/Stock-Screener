@@ -729,7 +729,8 @@ APP_HTML = r"""<!doctype html>
     }
 
     .app {
-      width: min(1720px, 100%);
+      width: 100%;
+      min-width: 0;
       padding: 24px;
     }
 
