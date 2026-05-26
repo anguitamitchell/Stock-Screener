@@ -17,6 +17,7 @@ HIGH_YIELD_OAS_THRESHOLD = 3.5
 def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> MarketConditionReport:
     symbol = ticker.upper()
     bars = fetch_price_history(symbol, refresh=refresh)
+    spy_bars = bars if symbol == "SPY" else fetch_price_history("SPY", refresh=refresh)
     equal_weight_bars = fetch_price_history("RSP", refresh=refresh)
     tech_bars = fetch_price_history("QQQ", refresh=refresh)
     utilities_bars = fetch_price_history("XLU", refresh=refresh)
@@ -25,9 +26,9 @@ def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> Market
     dollar_bars = fetch_price_history("UUP", refresh=refresh)
     treasury_yield_bars = fetch_price_history("^TNX", refresh=refresh)
     demark = evaluate_demark(symbol, bars)
-    participation = evaluate_market_participation(equal_weight_bars, bars)
-    technology = evaluate_technology_support(tech_bars, bars)
-    defensive = evaluate_defensive_rotation(utilities_bars, staples_bars, bars)
+    participation = evaluate_market_participation(equal_weight_bars, spy_bars)
+    technology = evaluate_technology_support(tech_bars, spy_bars)
+    defensive = evaluate_defensive_rotation(utilities_bars, staples_bars, spy_bars)
     credit = evaluate_credit_risk(high_yield_oas)
     shock = evaluate_dollar_yield_shock(dollar_bars, treasury_yield_bars)
     overall_score, overall_regime, summary = _combine_market_signals(

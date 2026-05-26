@@ -29,7 +29,7 @@ def screen_etf(
     holdings = fetch_holdings(symbol, refresh=refresh)
     selected_holdings = holdings[:limit] if limit else holdings
     benchmark_price = fetch_price_snapshot(symbol, refresh=refresh) if include_prices else None
-    market_condition = build_market_condition(symbol, refresh=refresh) if include_market else None
+    market_condition = build_market_condition("SPY", refresh=refresh) if include_market else None
 
     rated = []
     for holding in selected_holdings:
@@ -67,6 +67,7 @@ def screen_etf(
             "note": "Screening criteria are placeholders until user-defined rules are added.",
             "prices": "included" if include_prices else "not included",
             "market_condition": "included" if include_market else "not included",
+            "market_condition_benchmark": "SPY" if include_market else "",
             "benchmark": symbol if include_prices else "",
             "benchmark_return_20d_percent": benchmark_price.return_20d_percent if benchmark_price else None,
             "benchmark_return_60d_percent": benchmark_price.return_60d_percent if benchmark_price else None,
