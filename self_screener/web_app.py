@@ -1072,7 +1072,7 @@ APP_HTML = r"""<!doctype html>
 
     .summary-card {
       display: grid;
-      grid-template-columns: 1fr repeat(4, minmax(88px, auto));
+      grid-template-columns: minmax(0, 1fr) repeat(5, minmax(72px, max-content));
       gap: 12px;
       align-items: center;
       margin-bottom: 12px;
@@ -1085,11 +1085,13 @@ APP_HTML = r"""<!doctype html>
     }
 
     .summary-copy {
+      min-width: 0;
       color: #c7cec2;
       line-height: 1.45;
     }
 
     .summary-stat {
+      min-width: 72px;
       text-align: right;
     }
 
@@ -1793,7 +1795,7 @@ APP_HTML = r"""<!doctype html>
         font-size: 22px;
       }
       .summary-card {
-        grid-template-columns: 1fr repeat(4, minmax(74px, auto));
+        grid-template-columns: minmax(0, 1fr) repeat(5, minmax(68px, max-content));
         gap: 8px;
       }
       table { min-width: 1240px; }
