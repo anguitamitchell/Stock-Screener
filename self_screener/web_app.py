@@ -2303,7 +2303,7 @@ APP_HTML = r"""<!doctype html>
         },
         {
           key: "defensives",
-          label: "Defensives",
+          label: "SPY/Defensives",
           score: market.defensive_rotation.score,
           regime: market.defensive_rotation.regime,
           signal: market.defensive_rotation,
