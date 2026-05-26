@@ -91,31 +91,29 @@ def _combine_market_signals(
 
 def evaluate_market_participation(equal_weight_bars: List[PriceBar], cap_weight_bars: List[PriceBar]) -> MarketSignal:
     ratio_values = _aligned_close_ratios(equal_weight_bars, cap_weight_bars)
-    if len(ratio_values) < 200:
+    if not ratio_values:
         return MarketSignal(
             name="RSP/SPY market participation",
             score=50.0,
             regime="neutral",
-            reasons=["Market participation needs at least 200 aligned trading days for RSP/SPY."],
+            reasons=["Market participation needs current RSP and SPY closes."],
             metrics={},
         )
 
     current_ratio = ratio_values[-1]
-    baseline_ratio = ratio_values[-200]
-    normalized_ratio = current_ratio / baseline_ratio if baseline_ratio else 1.0
-    participation_return = (normalized_ratio - 1.0) * 100
-    score = round(max(0.0, min(100.0, 50.0 + (participation_return / 6.0) * 50.0)), 1)
+    ratio_gap = current_ratio - 1.0
+    score = round(max(0.0, min(100.0, 50.0 + (ratio_gap * 50.0))), 1)
 
-    if normalized_ratio > 1:
+    if current_ratio > 1:
         regime = "bullish"
-    elif normalized_ratio < 1:
+    elif current_ratio < 1:
         regime = "bearish"
     else:
         regime = "neutral"
 
     reasons = [
-        f"Normalized RSP/SPY is {normalized_ratio:.3f} versus a 1.000 baseline.",
-        "Above 1.000 means equal-weight S&P 500 participation is stronger than cap-weight SPY; below 1.000 means participation is weaker and bearish.",
+        f"Current RSP/SPY is {current_ratio:.3f}.",
+        "Above 1.000 means more market participation and is bullish; below 1.000 means less market participation and is bearish.",
     ]
 
     return MarketSignal(
@@ -125,9 +123,7 @@ def evaluate_market_participation(equal_weight_bars: List[PriceBar], cap_weight_
         reasons=reasons,
         metrics={
             "current_ratio": round(current_ratio, 6),
-            "baseline_ratio": round(baseline_ratio, 6),
-            "normalized_ratio": round(normalized_ratio, 6),
-            "participation_return_percent": round(participation_return, 2),
+            "ratio_gap": round(ratio_gap, 6),
         },
     )
 

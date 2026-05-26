@@ -24,15 +24,13 @@ Reality vs. narrative: cap-weighted indexes can rise while the average stock wea
 
 Implemented metric:
 
-- Normalized `RSP / SPY`
+- Current `RSP / SPY`
 
 Current rule:
 
-- Bullish: normalized `RSP / SPY` is above `1.000`
-- Neutral: normalized `RSP / SPY` is exactly `1.000`
-- Bearish: normalized `RSP / SPY` is below `1.000`
-
-Implementation note: the raw ETF share-price ratio is normalized to `1.000` at the start of the 200-trading-day lookback so the signal measures relative participation, not the absolute difference between ETF share prices.
+- Bullish: current `RSP / SPY` is above `1.000`
+- Neutral: current `RSP / SPY` is exactly `1.000`
+- Bearish: current `RSP / SPY` is below `1.000`
 
 ## Layer 3: Sentiment Extremes
 

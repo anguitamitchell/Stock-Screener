@@ -2290,7 +2290,7 @@ APP_HTML = r"""<!doctype html>
           regime: market.structural_weakness.regime,
           signal: market.structural_weakness,
           weight: "10%",
-          method: "Market participation score using normalized RSP/SPY. Above 1.000 means equal-weight participation is stronger than cap-weight SPY and is bullish; below 1.000 means participation is weaker and is bearish."
+          method: "Market participation score using the current RSP/SPY ratio. Above 1.000 means more market participation and is bullish; below 1.000 means less market participation and is bearish."
         },
         {
           key: "tech",
