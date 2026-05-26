@@ -5,10 +5,13 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from self_screener.models import DeMarkSignal, MarketConditionReport, MarketSignal, PriceBar
+from self_screener.providers.fred import FredObservation, fetch_fred_observation
 from self_screener.providers.yahoo_prices import fetch_price_history
 
 
 REPORT_DIR = Path("data") / "reports"
+HIGH_YIELD_OAS_SERIES_ID = "BAMLH0A0HYM2"
+HIGH_YIELD_OAS_THRESHOLD = 3.5
 
 
 def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> MarketConditionReport:
@@ -18,15 +21,14 @@ def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> Market
     tech_bars = fetch_price_history("QQQ", refresh=refresh)
     utilities_bars = fetch_price_history("XLU", refresh=refresh)
     staples_bars = fetch_price_history("XLP", refresh=refresh)
-    high_yield_bars = fetch_price_history("HYG", refresh=refresh)
-    aggregate_bond_bars = fetch_price_history("AGG", refresh=refresh)
+    high_yield_oas = fetch_fred_observation(HIGH_YIELD_OAS_SERIES_ID, refresh=refresh)
     dollar_bars = fetch_price_history("UUP", refresh=refresh)
     treasury_yield_bars = fetch_price_history("^TNX", refresh=refresh)
     demark = evaluate_demark(symbol, bars)
     participation = evaluate_market_participation(equal_weight_bars, bars)
     technology = evaluate_technology_support(tech_bars, bars)
     defensive = evaluate_defensive_rotation(utilities_bars, staples_bars, bars)
-    credit = evaluate_credit_risk(high_yield_bars, aggregate_bond_bars)
+    credit = evaluate_credit_risk(high_yield_oas)
     shock = evaluate_dollar_yield_shock(dollar_bars, treasury_yield_bars)
     overall_score, overall_regime, summary = _combine_market_signals(
         demark,
@@ -252,41 +254,43 @@ def evaluate_defensive_rotation(
     )
 
 
-def evaluate_credit_risk(high_yield_bars: List[PriceBar], aggregate_bond_bars: List[PriceBar]) -> MarketSignal:
-    credit_ratio = _aligned_close_ratios(high_yield_bars, aggregate_bond_bars)
-    if not credit_ratio:
+def evaluate_credit_risk(high_yield_oas: FredObservation) -> MarketSignal:
+    if high_yield_oas.value is None:
         return MarketSignal(
-            name="HYG/AGG credit risk",
+            name="High yield OAS credit risk",
             score=50.0,
             regime="neutral",
-            reasons=["Credit risk signal needs current HYG and AGG closes."],
-            metrics={},
+            reasons=[high_yield_oas.error or "Credit risk signal needs the latest high yield OAS value."],
+            metrics={"series_id": high_yield_oas.series_id},
         )
 
-    current_ratio = credit_ratio[-1]
-    ratio_gap = current_ratio - 1.0
-    score = round(max(0.0, min(100.0, 50.0 - (ratio_gap * 50.0))), 1)
+    spread = high_yield_oas.value
+    spread_gap = spread - HIGH_YIELD_OAS_THRESHOLD
+    score = round(max(0.0, min(100.0, 50.0 - ((spread_gap / HIGH_YIELD_OAS_THRESHOLD) * 50.0))), 1)
 
-    if current_ratio < 1:
+    if spread < HIGH_YIELD_OAS_THRESHOLD:
         regime = "bullish"
-    elif current_ratio > 1:
+    elif spread > HIGH_YIELD_OAS_THRESHOLD:
         regime = "bearish"
     else:
         regime = "neutral"
 
     reasons = [
-        f"Current HYG/AGG is {current_ratio:.3f}.",
-        "Below 1.000 is bullish for credit risk appetite; above 1.000 is bearish.",
+        f"ICE BofA US High Yield OAS is {spread:.2f} as of {high_yield_oas.date or 'latest available date'}.",
+        f"Below {HIGH_YIELD_OAS_THRESHOLD:.1f} is bullish; above {HIGH_YIELD_OAS_THRESHOLD:.1f} is bearish.",
     ]
 
     return MarketSignal(
-        name="HYG/AGG credit risk",
+        name="High yield OAS credit risk",
         score=score,
         regime=regime,
         reasons=reasons,
         metrics={
-            "current_ratio": round(current_ratio, 6),
-            "ratio_gap": round(ratio_gap, 6),
+            "series_id": high_yield_oas.series_id,
+            "observation_date": high_yield_oas.date,
+            "oas": spread,
+            "threshold": HIGH_YIELD_OAS_THRESHOLD,
+            "spread_gap": round(spread_gap, 4),
         },
     )
 

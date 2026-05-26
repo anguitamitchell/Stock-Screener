@@ -2317,7 +2317,7 @@ APP_HTML = r"""<!doctype html>
           regime: market.credit_risk.regime,
           signal: market.credit_risk,
           weight: "12%",
-          method: "Credit risk score using the current HYG/AGG ratio. Below 1.000 is bullish for credit risk appetite; above 1.000 is bearish."
+          method: "Credit risk score using ICE BofA US High Yield Index Option-Adjusted Spread from FRED. Below 3.5 is bullish; above 3.5 is bearish."
         },
         {
           key: "dollarYield",
@@ -2482,6 +2482,8 @@ APP_HTML = r"""<!doctype html>
         .replaceAll("hyg", "HYG")
         .replaceAll("agg", "AGG")
         .replaceAll("lqd", "LQD")
+        .replaceAll("oas", "OAS")
+        .replaceAll("fred", "FRED")
         .replaceAll("uup", "UUP")
         .replaceAll("tnx", "TNX");
     }

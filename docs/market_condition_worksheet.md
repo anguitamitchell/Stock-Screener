@@ -79,17 +79,13 @@ Reality vs. narrative: credit often warns before equities.
 
 Implemented metric:
 
-- Current `HYG / AGG` ratio as an ETF proxy
-
-Future metric:
-
-- ICE BofA US High Yield OAS
+- ICE BofA US High Yield Index Option-Adjusted Spread from FRED (`BAMLH0A0HYM2`)
 
 Current rule:
 
-- Bullish: current `HYG / AGG` is below `1.000`
-- Neutral: current `HYG / AGG` is exactly `1.000`
-- Bearish: current `HYG / AGG` is above `1.000`
+- Bullish: spread is below `3.5`
+- Neutral: spread is exactly `3.5`
+- Bearish: spread is above `3.5`
 
 ## Layer 7: Defensive Rotation
 
