@@ -1,5 +1,6 @@
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -239,10 +240,43 @@ def screen_holding(holding: Holding, refresh: bool = False) -> ScreenResult:
     )
 
 
-def _load_theme_config() -> Dict:
-    if not THEME_CONFIG_PATH.exists():
+def load_theme_config() -> Dict:
+    config_path = resolved_theme_config_path()
+    if not config_path:
         return {"themes": {}, "companies": {}}
-    return json.loads(THEME_CONFIG_PATH.read_text(encoding="utf-8"))
+    return json.loads(config_path.read_text(encoding="utf-8"))
+
+
+def resolved_theme_config_path() -> Optional[Path]:
+    if THEME_CONFIG_PATH.exists():
+        return THEME_CONFIG_PATH
+
+    bundle_root = Path(getattr(sys, "_MEIPASS", ""))
+    if bundle_root:
+        bundled_path = bundle_root / "config" / "semantic_themes.json"
+        if bundled_path.exists():
+            return bundled_path
+
+    executable_root = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else None
+    if executable_root:
+        executable_path = executable_root / "config" / "semantic_themes.json"
+        if executable_path.exists():
+            return executable_path
+
+    return None
+
+
+def theme_config_status() -> Dict:
+    path = resolved_theme_config_path()
+    return {
+        "found": path is not None,
+        "path": str(path) if path else "",
+        "write_path": str(THEME_CONFIG_PATH),
+    }
+
+
+def _load_theme_config() -> Dict:
+    return load_theme_config()
 
 
 def _curated_theme_exposures(raw_themes) -> Dict[str, str]:

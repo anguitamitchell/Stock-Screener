@@ -26,6 +26,8 @@ New-Item -ItemType Directory -Force -Path "dist\$Name\data" | Out-Null
 New-Item -ItemType Directory -Force -Path "dist\$Name\data\cache" | Out-Null
 New-Item -ItemType Directory -Force -Path "dist\$Name\data\reports" | Out-Null
 New-Item -ItemType Directory -Force -Path "dist\$Name\data\review" | Out-Null
+Copy-Item -Recurse -Force "config" "dist\$Name\config"
+Copy-Item -Recurse -Force "docs" "dist\$Name\docs"
 
 Write-Host ""
 Write-Host "Build complete: dist\$Name\$Name.exe"

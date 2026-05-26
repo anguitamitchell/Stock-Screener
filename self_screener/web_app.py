@@ -9,7 +9,12 @@ from self_screener.pipeline import _report_to_json, screen_etf
 from self_screener.providers.ssga_holdings import fetch_holdings
 from self_screener.providers.ssga_holdings import HoldingsFetchError
 from self_screener.providers.ssga_holdings import supported_etfs
-from self_screener.screeners.semantic import THEME_CONFIG_PATH, build_research_evidence
+from self_screener.screeners.semantic import (
+    THEME_CONFIG_PATH,
+    build_research_evidence,
+    load_theme_config,
+    theme_config_status,
+)
 
 
 DEFAULT_HOST = "127.0.0.1"
@@ -51,7 +56,7 @@ class ScreenerRequestHandler(BaseHTTPRequestHandler):
             self._handle_screen(parsed.query)
             return
         if parsed.path == "/api/health":
-            self._send_json({"ok": True})
+            self._send_json({"ok": True, "semantic_config": theme_config_status()})
             return
         if parsed.path == "/api/themes":
             self._send_json(_load_semantic_config().get("themes", {}))
@@ -333,9 +338,7 @@ class ScreenerRequestHandler(BaseHTTPRequestHandler):
 
 
 def _load_semantic_config():
-    if not THEME_CONFIG_PATH.exists():
-        return {"themes": {}, "companies": {}}
-    return json.loads(THEME_CONFIG_PATH.read_text(encoding="utf-8"))
+    return load_theme_config()
 
 
 def _write_semantic_config(config) -> None:
@@ -802,6 +805,10 @@ APP_HTML = r"""<!doctype html>
       align-items: start;
     }
 
+    .grid > * {
+      min-width: 0;
+    }
+
     .hero {
       display: grid;
       grid-template-columns: 1.3fr 0.7fr;
@@ -1027,6 +1034,7 @@ APP_HTML = r"""<!doctype html>
     }
 
     .table-panel {
+      min-width: 0;
       padding: 14px;
     }
 
@@ -1114,6 +1122,7 @@ APP_HTML = r"""<!doctype html>
     }
 
     .table-wrap {
+      width: 100%;
       overflow: auto;
       max-height: calc(100vh - 430px);
       min-height: 360px;
@@ -1726,6 +1735,87 @@ APP_HTML = r"""<!doctype html>
     .status {
       color: var(--muted);
       font-size: 13px;
+    }
+
+    @media (max-width: 1600px) {
+      .shell { grid-template-columns: 76px minmax(0, 1fr); }
+      .rail { padding: 16px 10px; }
+      .app { padding: 20px; }
+      .topbar {
+        grid-template-columns: minmax(280px, 1fr) minmax(360px, 560px);
+        gap: 14px;
+      }
+      .grid {
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 14px;
+      }
+      .hero {
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 12px;
+      }
+      .score-card {
+        min-height: 236px;
+        padding: 18px;
+      }
+      .big-score { font-size: 64px; }
+      .mini-grid { gap: 8px; padding: 12px; }
+      .mini {
+        min-height: 96px;
+        padding: 12px;
+      }
+      .mini strong {
+        margin-top: 10px;
+        font-size: 22px;
+      }
+      .summary-card {
+        grid-template-columns: 1fr repeat(4, minmax(74px, auto));
+        gap: 8px;
+      }
+      table { min-width: 1240px; }
+      th, td { padding: 11px 12px; }
+      .watch-panel { padding: 14px; }
+      .research-scroll { max-height: 240px; }
+    }
+
+    @media (max-width: 1400px) {
+      .grid { grid-template-columns: 1fr; }
+      .side {
+        position: static;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .table-wrap {
+        max-height: min(620px, calc(100vh - 360px));
+      }
+    }
+
+    @media (max-width: 1260px) {
+      .topbar, .hero { grid-template-columns: 1fr; }
+      .run-stack { justify-items: start; }
+      .recent-etfs { justify-content: flex-start; }
+      .side { grid-template-columns: 1fr; }
+      .summary-card, .source-card, .compare-card {
+        grid-template-columns: 1fr 1fr;
+      }
+      .summary-copy {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-height: 850px) and (min-width: 1121px) {
+      .app { padding-top: 18px; padding-bottom: 18px; }
+      .topbar { margin-bottom: 14px; }
+      .hero { margin-bottom: 14px; }
+      .score-card { min-height: 220px; }
+      .big-score { font-size: 58px; }
+      .regime { margin-top: 12px; }
+      .market-copy {
+        margin-top: 14px;
+        line-height: 1.42;
+      }
+      .table-wrap {
+        min-height: 300px;
+        max-height: calc(100vh - 360px);
+      }
     }
 
     @media (max-width: 1120px) {
