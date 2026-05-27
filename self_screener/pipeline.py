@@ -35,7 +35,12 @@ def screen_etf(
     for holding in selected_holdings:
         price_snapshot = fetch_price_snapshot(holding.ticker, refresh=refresh) if include_prices else None
         semantic_result = semantic.screen_holding(holding, refresh=refresh)
-        technical_result = technical.screen_holding(holding, price_snapshot, benchmark_price)
+        technical_result = technical.screen_holding(
+            holding,
+            price_snapshot,
+            benchmark_price,
+            market_condition.demark if market_condition else None,
+        )
         final_score, final_rating, reasons = rating.classify(semantic_result, technical_result)
         trade_plan_result = trade_plan.build_trade_plan(
             price_snapshot,

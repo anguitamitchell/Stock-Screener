@@ -3046,13 +3046,12 @@ APP_HTML = r"""<!doctype html>
       const decision = decisionSummary(row, semanticThemes);
       const quality = qualityBadge(row);
       const reliable = isResearchReliable(row);
-      const technicalMetrics = [
-        ["Price vs 20D", price.close_vs_sma_20_percent, 1.5],
-        ["Price vs 50D", price.close_vs_sma_50_percent, 2.5],
-        ["Price vs 200D", price.close_vs_sma_200_percent, 5],
-        ["1M momentum", price.return_20d_percent, 3],
-        ["3M momentum", price.return_60d_percent, 6],
-        ["3M vs SPY", relative3m(row), 3]
+      const tech = row.technical?.exposures || {};
+      const technicalBuckets = [
+        ["DeMark", `${tech.demark_points || "--"}/10`, `ETF DeMark ${tech.demark_source_score || "--"}`],
+        ["Momentum", `${tech.momentum_points || "--"}/70`, `${tech.momentum_true_count || "0"}/3 ${tech.momentum_label || ""}`],
+        ["Price", `${tech.price_points || "--"}/10`, `Price > 20D ${tech.price_above_20d || "missing"}`],
+        ["Moving Average", `${tech.moving_average_points || "--"}/10`, `20D > 200D ${tech.sma_20_above_200d || "missing"}`]
       ];
       els.drawerTicker.textContent = row.holding.ticker;
       els.drawerName.textContent = row.holding.name;
@@ -3076,7 +3075,7 @@ APP_HTML = r"""<!doctype html>
           <div class="drawer-section-title">Score stack</div>
           <div class="score-stack">
             ${scoreRow("Semantic score", row.semantic.score, row.semantic.label, "Narrative fit to your five themes")}
-            ${scoreRow("Technical score", row.technical.score, row.technical.label, "Trend, momentum, and relative strength")}
+            ${scoreRow("Technical score", row.technical.score, row.technical.label, "DeMark 10%, Momentum 70%, Price 10%, Moving Average 10%")}
           </div>
         </div>
         <div class="drawer-section">
@@ -3142,7 +3141,7 @@ APP_HTML = r"""<!doctype html>
           <div class="drawer-section-title">Technical</div>
           <div class="reason-box">
             <div class="metric-grid">
-              ${technicalMetrics.map(([label, value, threshold]) => technicalMetricTile(label, value, threshold)).join("")}
+              ${technicalBuckets.map(([label, value, tag]) => tradePlanTile(label, value, tag)).join("")}
             </div>
             <div class="formula">${row.technical.reasons.join("<br>")}</div>
           </div>

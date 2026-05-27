@@ -1,12 +1,13 @@
 from typing import Optional
 
-from self_screener.models import Holding, PriceSnapshot, ScreenResult
+from self_screener.models import DeMarkSignal, Holding, PriceSnapshot, ScreenResult
 
 
 def screen_holding(
     holding: Holding,
     price: Optional[PriceSnapshot] = None,
     benchmark: Optional[PriceSnapshot] = None,
+    market_demark: Optional[DeMarkSignal] = None,
 ) -> ScreenResult:
     if price is None:
         return ScreenResult(
@@ -22,100 +23,80 @@ def screen_holding(
             reasons=[f"Price snapshot unavailable: {price.error}"],
         )
 
-    score = 0.0
-    reasons = []
-
     close = price.last_close
     sma_20 = price.sma_20
     sma_50 = price.sma_50
     sma_200 = price.sma_200
 
-    close_vs_20 = _ratio_percent(close, sma_20)
-    close_vs_50 = _ratio_percent(close, sma_50)
-    close_vs_200 = _ratio_percent(close, sma_200)
-    sma_20_vs_200 = _ratio_percent(sma_20, sma_200)
-    sma_50_vs_200 = _ratio_percent(sma_50, sma_200)
+    price_above_200d = _is_above(close, sma_200)
+    sma_20_above_50d = _is_above(sma_20, sma_50)
+    sma_50_above_200d = _is_above(sma_50, sma_200)
+    price_above_20d = _is_above(close, sma_20)
+    sma_20_above_200d = _is_above(sma_20, sma_200)
 
-    score += _scaled_component(close_vs_20, full_at=5, floor_at=-5, weight=15)
-    score += _scaled_component(close_vs_200, full_at=10, floor_at=-10, weight=20)
-    score += _scaled_component(sma_20_vs_200, full_at=5, floor_at=-5, weight=15)
-    score += _above_both_component(close, sma_20, sma_200)
-    score += _momentum_component(price, benchmark)
-    score += _scaled_component(close_vs_50, full_at=7, floor_at=-7, weight=10)
-    score += _scaled_component(sma_50_vs_200, full_at=5, floor_at=-5, weight=5)
+    demark_source_score = market_demark.score if market_demark else 50.0
+    demark_points = _weighted_points(demark_source_score, 10.0)
 
-    rounded_score = round(score, 1)
+    momentum_checks = [price_above_200d, sma_20_above_50d, sma_50_above_200d]
+    momentum_true_count = sum(1 for item in momentum_checks if item is True)
+    momentum_points = round((momentum_true_count / 3) * 70.0, 1)
+    momentum_label = _momentum_label(momentum_true_count)
+
+    price_points = 10.0 if price_above_20d is True else 0.0
+    moving_average_points = 10.0 if sma_20_above_200d is True else 0.0
+
+    rounded_score = round(demark_points + momentum_points + price_points + moving_average_points, 1)
     label = _label_for_score(rounded_score)
 
-    reasons.append(
-        f"Price/20D: {_format_ratio(close_vs_20)}; Price/200D: {_format_ratio(close_vs_200)}; "
-        f"20D/200D: {_format_ratio(sma_20_vs_200)}."
-    )
-    reasons.append(
-        f"Price is {_above_text(close, sma_20, '20D')} and {_above_text(close, sma_200, '200D')}; "
-        f"momentum: 1M {_format_ratio(price.return_20d_percent)}, 3M {_format_ratio(price.return_60d_percent)}."
-    )
-    reasons.append(
-        f"Additional checks: Price/50D {_format_ratio(close_vs_50)}, 50D/200D {_format_ratio(sma_50_vs_200)}, "
-        f"3M vs benchmark {_format_ratio(_relative_return(price.return_60d_percent, benchmark.return_60d_percent if benchmark else None))}."
-    )
+    reasons = [
+        f"DeMark bucket: {demark_points:.1f}/10 from selected ETF DeMark score {demark_source_score:.1f} ({market_demark.regime if market_demark else 'neutral fallback'}).",
+        (
+            f"Momentum bucket: {momentum_points:.1f}/70, {momentum_label}; "
+            f"price > 200D is {_format_bool(price_above_200d)}, "
+            f"20D > 50D is {_format_bool(sma_20_above_50d)}, "
+            f"50D > 200D is {_format_bool(sma_50_above_200d)}."
+        ),
+        f"Price bucket: {price_points:.1f}/10; current price > 20D is {_format_bool(price_above_20d)}.",
+        f"Moving Average bucket: {moving_average_points:.1f}/10; 20D > 200D is {_format_bool(sma_20_above_200d)}.",
+    ]
 
     return ScreenResult(
         score=rounded_score,
         label=label,
         reasons=reasons,
+        exposures={
+            "demark_points": f"{demark_points:.1f}",
+            "demark_source_score": f"{demark_source_score:.1f}",
+            "momentum_points": f"{momentum_points:.1f}",
+            "momentum_true_count": str(momentum_true_count),
+            "momentum_label": momentum_label,
+            "price_points": f"{price_points:.1f}",
+            "moving_average_points": f"{moving_average_points:.1f}",
+            "price_above_200d": _format_bool(price_above_200d),
+            "sma_20_above_50d": _format_bool(sma_20_above_50d),
+            "sma_50_above_200d": _format_bool(sma_50_above_200d),
+            "price_above_20d": _format_bool(price_above_20d),
+            "sma_20_above_200d": _format_bool(sma_20_above_200d),
+        },
     )
 
 
-def _scaled_component(value: Optional[float], full_at: float, floor_at: float, weight: float) -> float:
-    if value is None:
-        return 0.0
-    if value >= full_at:
-        return weight
-    if value <= floor_at:
-        return 0.0
-    position = (value - floor_at) / (full_at - floor_at)
-    return max(0.0, min(weight, position * weight))
-
-
-def _above_both_component(close: Optional[float], sma_20: Optional[float], sma_200: Optional[float]) -> float:
-    if close is None:
-        return 0.0
-    above_20 = sma_20 is not None and close > sma_20
-    above_200 = sma_200 is not None and close > sma_200
-    if above_20 and above_200:
-        return 20.0
-    if above_20 or above_200:
-        return 8.0
-    return 0.0
-
-
-def _momentum_component(price: PriceSnapshot, benchmark: Optional[PriceSnapshot]) -> float:
-    score = 0.0
-    score += _scaled_component(price.return_20d_percent, full_at=8, floor_at=-8, weight=5)
-    score += _scaled_component(price.return_60d_percent, full_at=15, floor_at=-15, weight=5)
-    score += _scaled_component(
-        _relative_return(
-            price.return_60d_percent,
-            benchmark.return_60d_percent if benchmark else None,
-        ),
-        full_at=8,
-        floor_at=-8,
-        weight=5,
-    )
-    return min(15.0, score)
-
-
-def _relative_return(value: Optional[float], benchmark_value: Optional[float]) -> Optional[float]:
-    if value is None or benchmark_value is None:
+def _is_above(value: Optional[float], comparison: Optional[float]) -> Optional[bool]:
+    if value is None or comparison is None:
         return None
-    return value - benchmark_value
+    return value > comparison
 
 
-def _ratio_percent(numerator: Optional[float], denominator: Optional[float]) -> Optional[float]:
-    if numerator is None or denominator in (None, 0):
-        return None
-    return ((numerator / denominator) - 1) * 100
+def _weighted_points(score: float, weight: float) -> float:
+    return round(max(0.0, min(100.0, score)) * (weight / 100.0), 1)
+
+
+def _momentum_label(true_count: int) -> str:
+    if true_count == 3:
+        return "bullish"
+    if true_count == 2:
+        return "neutral"
+    return "bearish"
 
 
 def _label_for_score(score: float) -> str:
@@ -134,7 +115,7 @@ def _format_ratio(value: Optional[float]) -> str:
     return f"{value:.2f}%"
 
 
-def _above_text(close: Optional[float], average: Optional[float], label: str) -> str:
-    if close is None or average is None:
-        return f"missing {label}"
-    return f"above {label}" if close > average else f"below {label}"
+def _format_bool(value: Optional[bool]) -> str:
+    if value is None:
+        return "missing"
+    return "true" if value else "false"
