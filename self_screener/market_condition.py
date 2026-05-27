@@ -139,45 +139,45 @@ def evaluate_structural_weakness(equal_weight_bars: List[PriceBar], cap_weight_b
 
 def evaluate_technology_support(tech_bars: List[PriceBar], benchmark_bars: List[PriceBar]) -> MarketSignal:
     tech_closes = _closes(tech_bars)
-    relative_values = _aligned_close_ratios(tech_bars, benchmark_bars)
-    if len(tech_closes) < 200 or len(relative_values) < 60:
+    if len(tech_closes) < 200:
         return MarketSignal(
             name="QQQ technology support",
             score=50.0,
             regime="neutral",
-            reasons=["Technology support signal needs at least 200 QQQ bars and 60 relative-strength bars."],
+            reasons=["Technology support signal needs at least 200 QQQ price bars."],
             metrics={},
         )
 
     current_close = tech_closes[-1]
+    sma_20 = _average(tech_closes[-20:])
     sma_50 = _average(tech_closes[-50:])
     sma_200 = _average(tech_closes[-200:])
-    close_vs_200 = _ratio_percent(current_close, sma_200)
-    sma_50_vs_200 = _ratio_percent(sma_50, sma_200)
-    return_20d = _period_return(tech_closes, 20)
-    return_60d = _period_return(tech_closes, 60)
-    relative_return_60d = _period_return(relative_values, 60)
 
-    score = 50.0
-    score += _scaled_component(close_vs_200, full_at=8, floor_at=-8, weight=25)
-    score += _scaled_component(sma_50_vs_200, full_at=4, floor_at=-4, weight=20)
-    score += _scaled_component(return_20d, full_at=6, floor_at=-6, weight=15)
-    score += _scaled_component(return_60d, full_at=12, floor_at=-12, weight=15)
-    score += _scaled_component(relative_return_60d, full_at=5, floor_at=-5, weight=15)
-    score -= 45.0
-    score = round(max(0.0, min(100.0, score)), 1)
+    price_above_200d = current_close > sma_200
+    sma_50_above_200d = sma_50 > sma_200
+    sma_20_above_200d = sma_20 > sma_200
+    true_count = sum([price_above_200d, sma_50_above_200d, sma_20_above_200d])
 
-    if score >= 60:
+    if true_count == 3:
         regime = "bullish"
-    elif score <= 40:
-        regime = "bearish"
-    else:
+    elif true_count == 2:
         regime = "neutral"
+    else:
+        regime = "bearish"
+
+    score_by_count = {
+        3: 100.0,
+        2: 50.0,
+        1: 25.0,
+        0: 0.0,
+    }
+    score = score_by_count[true_count]
 
     reasons = [
-        f"QQQ is {_format_ratio(close_vs_200)} vs its 200D average.",
-        f"QQQ 50D/200D trend is {_format_ratio(sma_50_vs_200)}.",
-        f"QQQ trend: 1M {_format_ratio(return_20d)}, 3M {_format_ratio(return_60d)}, 3M vs SPY {_format_ratio(relative_return_60d)}.",
+        f"QQQ price above 200D moving average: {price_above_200d}.",
+        f"QQQ 50D moving average above 200D moving average: {sma_50_above_200d}.",
+        f"QQQ 20D moving average above 200D moving average: {sma_20_above_200d}.",
+        f"Technology checklist passed {true_count} of 3 checks.",
     ]
 
     return MarketSignal(
@@ -187,13 +187,13 @@ def evaluate_technology_support(tech_bars: List[PriceBar], benchmark_bars: List[
         reasons=reasons,
         metrics={
             "last_close": round(current_close, 4),
+            "sma_20": round(sma_20, 4) if sma_20 is not None else None,
             "sma_50": round(sma_50, 4) if sma_50 is not None else None,
             "sma_200": round(sma_200, 4) if sma_200 is not None else None,
-            "close_vs_200d_percent": close_vs_200,
-            "sma_50_vs_200d_percent": sma_50_vs_200,
-            "return_20d_percent": return_20d,
-            "return_60d_percent": return_60d,
-            "relative_return_60d_percent": relative_return_60d,
+            "price_above_200d": price_above_200d,
+            "sma_50_above_200d": sma_50_above_200d,
+            "sma_20_above_200d": sma_20_above_200d,
+            "true_count": true_count,
         },
     )
 

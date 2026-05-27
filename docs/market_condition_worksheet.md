@@ -50,16 +50,15 @@ Reality vs. narrative: tech is the high-beta engine and often leads both up and 
 
 Implemented metric:
 
-- `QQQ` relative to its 200D moving average
-- `QQQ` 50D moving average relative to its 200D moving average
-- `QQQ` 1M / 3M trend
-- `QQQ / SPY` 3M relative strength
+- Current `QQQ` price greater than its 200D moving average
+- `QQQ` 50D moving average greater than its 200D moving average
+- `QQQ` 20D moving average greater than its 200D moving average
 
 Current rule:
 
-- Bullish: QQQ above 200D, 50D above 200D, positive trend, and leading SPY
-- Neutral: mixed technology trend
-- Bearish: QQQ below 200D, weak 50D/200D structure, or lagging SPY
+- Bullish: all 3 checks are true
+- Neutral: 2 checks are true
+- Bearish: 1 or 0 checks are true
 
 ## Layer 5: Breadth
 

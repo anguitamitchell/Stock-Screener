@@ -2299,7 +2299,7 @@ APP_HTML = r"""<!doctype html>
           regime: market.technology_support.regime,
           signal: market.technology_support,
           weight: "30%",
-          method: "Technology leadership score using QQQ trend, QQQ moving averages, and QQQ relative strength versus SPY."
+          method: "Technology score using QQQ only: price above 200D, 50D above 200D, and 20D above 200D. Three true is bullish, two true is neutral, and one or zero true is bearish."
         },
         {
           key: "defensives",
