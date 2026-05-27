@@ -1574,6 +1574,9 @@ APP_HTML = r"""<!doctype html>
     }
 
     .metric-tile {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      align-items: start;
       padding: 10px;
       border: 1px solid #252b25;
       border-radius: 12px;
@@ -1598,20 +1601,28 @@ APP_HTML = r"""<!doctype html>
 
     .metric-tile em {
       display: inline-flex;
+      align-self: end;
+      align-items: center;
+      justify-content: center;
       margin-top: 7px;
-      padding: 3px 7px;
+      box-sizing: border-box;
+      height: 24px;
+      width: 100%;
+      padding: 3px 9px;
       border-radius: 999px;
       color: #071006;
-      background: var(--green);
+      background: rgba(48, 255, 188, 0.92);
       font-size: 11px;
       font-style: normal;
       font-weight: 900;
       text-transform: uppercase;
+      white-space: nowrap;
     }
 
     .metric-tile em.neutral {
-      color: #1d1602;
-      background: var(--amber);
+      color: var(--text);
+      background: rgba(255,255,255,0.12);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.16);
     }
 
     .metric-tile em.bearish {
@@ -2225,7 +2236,7 @@ APP_HTML = r"""<!doctype html>
       els.marketRegime.className = `regime ${toneClass(market.overall_regime)}`;
       els.marketSummary.textContent = market.summary;
       renderMarketHistory();
-      const signals = marketSignals(market);
+      const signals = marketSignals(market).sort((a, b) => b.weightValue - a.weightValue);
       els.signalGrid.innerHTML = `
         ${signals.map((signal) => `
         <button class="mini ${isActiveMarketDrawer(signal.key) ? "active" : ""}" type="button" data-market-signal="${signal.key}" aria-expanded="${isActiveMarketDrawer(signal.key)}">
@@ -2281,6 +2292,7 @@ APP_HTML = r"""<!doctype html>
           regime: market.demark.regime,
           signal: market.demark,
           weight: "10%",
+          weightValue: 10,
           method: "Exhaustion score using the current TD Setup count and TD Countdown count. A completed sell setup/countdown pressures the score lower; a completed buy setup/countdown supports the score."
         },
         {
@@ -2290,6 +2302,7 @@ APP_HTML = r"""<!doctype html>
           regime: market.structural_weakness.regime,
           signal: market.structural_weakness,
           weight: "10%",
+          weightValue: 10,
           method: "Market participation score using the current RSP/SPY ratio. Above 1.000 means more market participation and is bullish; below 1.000 means less market participation and is bearish."
         },
         {
@@ -2299,6 +2312,7 @@ APP_HTML = r"""<!doctype html>
           regime: market.technology_support.regime,
           signal: market.technology_support,
           weight: "30%",
+          weightValue: 30,
           method: "Technology score using QQQ only: price above 200D, 50D above 200D, and 20D above 200D. Three true is bullish, two true is neutral, and one or zero true is bearish."
         },
         {
@@ -2308,6 +2322,7 @@ APP_HTML = r"""<!doctype html>
           regime: market.defensive_rotation.regime,
           signal: market.defensive_rotation,
           weight: "30%",
+          weightValue: 30,
           method: "Risk-appetite score using XLU/SPY and XLP/SPY. Defensive sectors outperforming is treated as caution, so this signal is inverted."
         },
         {
@@ -2317,6 +2332,7 @@ APP_HTML = r"""<!doctype html>
           regime: market.credit_risk.regime,
           signal: market.credit_risk,
           weight: "12%",
+          weightValue: 12,
           method: "Credit risk score using ICE BofA US High Yield Index Option-Adjusted Spread from FRED. Below 3.5 is bullish; above 3.5 is bearish."
         },
         {
@@ -2326,9 +2342,10 @@ APP_HTML = r"""<!doctype html>
           regime: market.dollar_yield_shock.regime,
           signal: market.dollar_yield_shock,
           weight: "8%",
+          weightValue: 8,
           method: "Dollar/yield score using DXY and the 10-year Treasury yield. DXY above 100 is bearish; 10-year yield above 4.5 is bearish. Both bearish makes the signal bearish, one bearish is neutral, and both bullish is bullish."
         }
-      ];
+      ].sort((a, b) => b.weightValue - a.weightValue);
     }
 
     function openMarketSignalDrawer(signal) {
@@ -3048,10 +3065,10 @@ APP_HTML = r"""<!doctype html>
       const reliable = isResearchReliable(row);
       const tech = row.technical?.exposures || {};
       const technicalBuckets = [
-        ["DeMark", `${tech.demark_points || "--"}/10`, `ETF DeMark ${tech.demark_source_score || "--"}`],
-        ["Momentum", `${tech.momentum_points || "--"}/70`, `${tech.momentum_true_count || "0"}/3 ${tech.momentum_label || ""}`],
-        ["Price", `${tech.price_points || "--"}/10`, `Price > 20D ${tech.price_above_20d || "missing"}`],
-        ["Moving Average", `${tech.moving_average_points || "--"}/10`, `20D > 200D ${tech.sma_20_above_200d || "missing"}`]
+        ["DeMark", `${tech.demark_points || "--"}/10`, `ETF DeMark ${tech.demark_source_score || "--"}`, toneFromScore(tech.demark_source_score)],
+        ["Momentum", `${tech.momentum_points || "--"}/70`, `${tech.momentum_true_count || "0"}/3 ${tech.momentum_label || ""}`, toneFromSignal(tech.momentum_label)],
+        ["Price", `${tech.price_points || "--"}/10`, `Price > 20D ${tech.price_above_20d || "missing"}`, toneFromBooleanText(tech.price_above_20d)],
+        ["Moving Average", `${tech.moving_average_points || "--"}/10`, `20D > 200D ${tech.sma_20_above_200d || "missing"}`, toneFromBooleanText(tech.sma_20_above_200d)]
       ];
       els.drawerTicker.textContent = row.holding.ticker;
       els.drawerName.textContent = row.holding.name;
@@ -3102,12 +3119,12 @@ APP_HTML = r"""<!doctype html>
           <div class="drawer-section-title">Trade plan</div>
           <div class="reason-box">
             <div class="metric-grid">
-              ${tradePlanTile("Entry zone", priceRange(plan.entry_low, plan.entry_high), plan.label || "watch")}
-              ${tradePlanTile("Breakout", money(plan.breakout_trigger), "confirm")}
-              ${tradePlanTile("Risk exit", money(plan.stop_loss), "stop")}
-              ${tradePlanTile("Target 1", money(plan.target_1), "trim")}
-              ${tradePlanTile("Target 2", money(plan.target_2), "stretch")}
-              ${tradePlanTile("Reward/Risk", plan.reward_risk ? `${fmt(plan.reward_risk, 2)}x` : "--", "estimate")}
+              ${tradePlanTile("Entry zone", priceRange(plan.entry_low, plan.entry_high), plan.label || "watch", tradePlanTone(plan.label))}
+              ${tradePlanTile("Breakout", money(plan.breakout_trigger), "confirm", "bullish")}
+              ${tradePlanTile("Risk exit", money(plan.stop_loss), "stop", "bearish")}
+              ${tradePlanTile("Target 1", money(plan.target_1), "trim", "neutral")}
+              ${tradePlanTile("Target 2", money(plan.target_2), "stretch", "bearish")}
+              ${tradePlanTile("Reward/Risk", plan.reward_risk ? `${fmt(plan.reward_risk, 2)}x` : "--", "estimate", rewardRiskTone(plan.reward_risk))}
             </div>
             <div class="formula">${(plan.notes || []).map(escapeHtml).join("<br>")}</div>
           </div>
@@ -3141,7 +3158,7 @@ APP_HTML = r"""<!doctype html>
           <div class="drawer-section-title">Technical</div>
           <div class="reason-box">
             <div class="metric-grid">
-              ${technicalBuckets.map(([label, value, tag]) => tradePlanTile(label, value, tag)).join("")}
+              ${technicalBuckets.map(([label, value, tag, tone]) => tradePlanTile(label, value, tag, tone)).join("")}
             </div>
             <div class="formula">${row.technical.reasons.join("<br>")}</div>
           </div>
@@ -3290,14 +3307,59 @@ APP_HTML = r"""<!doctype html>
       `;
     }
 
-    function tradePlanTile(label, value, tag) {
+    function tradePlanTile(label, value, tag, tone = null) {
+      const indicatorTone = tone || toneFromSignal(tag) || "neutral";
       return `
         <div class="metric-tile">
           <span>${label}</span>
-          <strong>${escapeHtml(value)}</strong>
-          <em class="neutral">${escapeHtml(tag)}</em>
+          <strong class="${indicatorTone}">${escapeHtml(value)}</strong>
+          <em class="${indicatorTone}">${escapeHtml(tag)}</em>
         </div>
       `;
+    }
+
+    function toneFromSignal(value) {
+      const text = String(value || "").toLowerCase();
+      if (["bullish", "buy", "positive", "true", "confirm", "near entry", "clean", "curated", "direct"].some((term) => text.includes(term))) {
+        return "bullish";
+      }
+      if (["bearish", "sell", "negative", "false", "weak", "stop", "stretch", "risk", "wait for reclaim"].some((term) => text.includes(term))) {
+        return "bearish";
+      }
+      if (["hold", "neutral", "watch", "trim", "estimate", "indirect", "review", "mixed", "pullback"].some((term) => text.includes(term))) {
+        return "neutral";
+      }
+      return null;
+    }
+
+    function toneFromBooleanText(value) {
+      const text = String(value || "").toLowerCase();
+      if (text === "true") return "bullish";
+      if (text === "false") return "bearish";
+      return "neutral";
+    }
+
+    function toneFromScore(value) {
+      const score = Number(value);
+      if (Number.isNaN(score)) return "neutral";
+      if (score >= 60) return "bullish";
+      if (score <= 40) return "bearish";
+      return "neutral";
+    }
+
+    function tradePlanTone(label) {
+      const text = String(label || "").toLowerCase();
+      if (text.includes("near entry") || text.includes("breakout")) return "bullish";
+      if (text.includes("reclaim")) return "bearish";
+      return "neutral";
+    }
+
+    function rewardRiskTone(value) {
+      const ratio = Number(value);
+      if (Number.isNaN(ratio)) return "neutral";
+      if (ratio >= 2) return "bullish";
+      if (ratio < 1.5) return "bearish";
+      return "neutral";
     }
 
     function truncateText(value, maxLength) {
