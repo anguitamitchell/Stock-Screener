@@ -653,6 +653,35 @@ APP_HTML = r"""<!doctype html>
 
     * { box-sizing: border-box; }
 
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(204,255,63,0.26) rgba(255,255,255,0.04);
+    }
+
+    *::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    *::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.035);
+      border-radius: 999px;
+    }
+
+    *::-webkit-scrollbar-thumb {
+      border: 2px solid rgba(5,6,5,0.92);
+      border-radius: 999px;
+      background: rgba(204,255,63,0.22);
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+      background: rgba(204,255,63,0.38);
+    }
+
+    *::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -1151,10 +1180,26 @@ APP_HTML = r"""<!doctype html>
     .table-wrap {
       width: 100%;
       overflow: auto;
+      scrollbar-color: rgba(204,255,63,0.20) rgba(255,255,255,0.025);
       max-height: calc(100vh - 430px);
       min-height: 360px;
       border: 1px solid var(--line);
       border-radius: 18px;
+      background: rgba(5,6,5,0.36);
+    }
+
+    .table-wrap::-webkit-scrollbar {
+      width: 9px;
+      height: 9px;
+    }
+
+    .table-wrap::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.025);
+    }
+
+    .table-wrap::-webkit-scrollbar-thumb {
+      border: 2px solid #090c08;
+      background: rgba(204,255,63,0.18);
     }
 
     table {
