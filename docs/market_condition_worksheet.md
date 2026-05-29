@@ -24,13 +24,15 @@ Reality vs. narrative: cap-weighted indexes can rise while the average stock wea
 
 Implemented metric:
 
-- Current `RSP / SPY`
+- Russell 3000 stocks above their 20D moving average (`$R3TW`)
+- Recent weekly/monthly breadth floor and ceiling behavior where available
 
 Current rule:
 
-- Bullish: current `RSP / SPY` is above `1.000`
-- Neutral: current `RSP / SPY` is exactly `1.000`
-- Bearish: current `RSP / SPY` is below `1.000`
+- Bullish: normal range is 55-85%, with a 40-45% high-floor support zone
+- Neutral: normal range is 35-65%, with churn around the 50% midpoint
+- Bearish: normal range is 10-45%, with 50-55% acting as a low-ceiling rally failure area
+- Below 15% is treated as systemic capitulation; above 85% is treated as short-term froth
 
 ## Layer 3: Sentiment Extremes
 

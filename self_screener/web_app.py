@@ -2442,7 +2442,7 @@ APP_HTML = r"""<!doctype html>
           signal: market.structural_weakness,
           weight: "10%",
           weightValue: 10,
-          method: "Market participation score using the current RSP/SPY ratio. Above 1.000 means more market participation and is bullish; below 1.000 means less market participation and is bearish."
+          method: "Market participation score using Russell 3000 stocks above their 20D moving average. Bull regimes hold 55-85% with a 40-45% floor, neutral regimes churn between 35-65%, and bear regimes stay mostly between 10-45% with a 50-55% ceiling."
         },
         {
           key: "tech",

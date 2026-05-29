@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from self_screener.models import DeMarkSignal, MarketConditionReport, MarketSignal, PriceBar
+from self_screener.providers.barchart_breadth import BreadthObservation, fetch_russell_3000_above_20d
 from self_screener.providers.fred import FredObservation, fetch_fred_observation
 from self_screener.providers.yahoo_prices import fetch_price_history
 
@@ -20,7 +21,7 @@ def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> Market
     symbol = ticker.upper()
     bars = fetch_price_history(symbol, refresh=refresh)
     spy_bars = bars if symbol == "SPY" else fetch_price_history("SPY", refresh=refresh)
-    equal_weight_bars = fetch_price_history("RSP", refresh=refresh)
+    russell_3000_above_20d = fetch_russell_3000_above_20d(refresh=refresh)
     tech_bars = fetch_price_history("QQQ", refresh=refresh)
     utilities_bars = fetch_price_history("XLU", refresh=refresh)
     staples_bars = fetch_price_history("XLP", refresh=refresh)
@@ -28,7 +29,7 @@ def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> Market
     dollar_bars = fetch_price_history("DX-Y.NYB", refresh=refresh)
     treasury_yield_bars = fetch_price_history("^TNX", refresh=refresh)
     demark = evaluate_demark(symbol, bars)
-    participation = evaluate_market_participation(equal_weight_bars, spy_bars)
+    participation = evaluate_market_participation(russell_3000_above_20d)
     technology = evaluate_technology_support(tech_bars, spy_bars)
     defensive = evaluate_defensive_rotation(utilities_bars, staples_bars, spy_bars)
     credit = evaluate_credit_risk(high_yield_oas)
@@ -94,47 +95,85 @@ def _combine_market_signals(
     return score, regime, summary
 
 
-def evaluate_market_participation(equal_weight_bars: List[PriceBar], cap_weight_bars: List[PriceBar]) -> MarketSignal:
-    ratio_values = _aligned_close_ratios(equal_weight_bars, cap_weight_bars)
-    if not ratio_values:
+def evaluate_market_participation(breadth: BreadthObservation) -> MarketSignal:
+    if breadth.value is None:
         return MarketSignal(
-            name="RSP/SPY market participation",
+            name="Russell 3000 20D breadth participation",
             score=50.0,
             regime="neutral",
-            reasons=["Market participation needs current RSP and SPY closes."],
+            reasons=[breadth.error or "Market participation needs the latest Russell 3000 % above 20D value."],
             metrics={},
         )
 
-    current_ratio = ratio_values[-1]
-    ratio_gap = current_ratio - 1.0
-    score = round(max(0.0, min(100.0, 50.0 + (ratio_gap * 50.0))), 1)
-
-    if current_ratio > 1:
-        regime = "bullish"
-    elif current_ratio < 1:
-        regime = "bearish"
-    else:
-        regime = "neutral"
+    value = breadth.value
+    score, regime, regime_note = _score_russell_3000_20d_breadth(value, breadth.monthly_low, breadth.monthly_high)
 
     reasons = [
-        f"Current RSP/SPY is {current_ratio:.3f}.",
-        "Above 1.000 means more market participation and is bullish; below 1.000 means less market participation and is bearish.",
+        f"Russell 3000 stocks above their 20D moving average is {value:.1f}%.",
+        regime_note,
+        "Bull regime: 55-85% with a 40-45% support floor; neutral regime: 35-65% churn; bear regime: 10-45% with a 50-55% ceiling.",
     ]
 
     return MarketSignal(
-        name="RSP/SPY market participation",
+        name="Russell 3000 20D breadth participation",
         score=score,
         regime=regime,
         reasons=reasons,
         metrics={
-            "current_ratio": round(current_ratio, 6),
-            "ratio_gap": round(ratio_gap, 6),
+            "russell_3000_above_20d_percent": round(value, 4),
+            "previous_close": breadth.previous_close,
+            "weekly_high": breadth.weekly_high,
+            "weekly_low": breadth.weekly_low,
+            "monthly_high": breadth.monthly_high,
+            "monthly_low": breadth.monthly_low,
         },
     )
 
 
 def evaluate_structural_weakness(equal_weight_bars: List[PriceBar], cap_weight_bars: List[PriceBar]) -> MarketSignal:
-    return evaluate_market_participation(equal_weight_bars, cap_weight_bars)
+    return MarketSignal(
+        name="Legacy market participation",
+        score=50.0,
+        regime="neutral",
+        reasons=["Legacy RSP/SPY participation is no longer used. Current app uses Russell 3000 20D breadth."],
+        metrics={},
+    )
+
+
+def _score_russell_3000_20d_breadth(
+    value: float,
+    monthly_low: Optional[float],
+    monthly_high: Optional[float],
+) -> Tuple[float, str, str]:
+    if value >= 85:
+        return 70.0, "bullish", "Breadth is above the 85% froth ceiling: structurally strong, but short-term stretched."
+
+    if value >= 55:
+        if monthly_low is not None and monthly_low >= 40:
+            return 82.0, "bullish", "Breadth is in the 55-85% bull range and the recent floor held above the 40-45% high-floor zone."
+        if monthly_low is not None and monthly_low < 35 and monthly_high is not None and monthly_high >= 65:
+            return 55.0, "neutral", "Breadth recovered into the upper range, but the recent floor broke below neutral support, suggesting transition-market churn."
+        return 68.0, "bullish", "Breadth is in the 55-85% bull range, though the high-floor support behavior is not fully confirmed."
+
+    if value >= 45:
+        if monthly_high is not None and monthly_high <= 55:
+            return 38.0, "bearish", "Breadth is trapped near the 50-55% bear-market rally ceiling."
+        return 50.0, "neutral", "Breadth is near the 50% midpoint where neutral and transition markets often churn."
+
+    if value >= 35:
+        if monthly_low is not None and monthly_low >= 40:
+            return 60.0, "bullish", "Breadth is testing the 40-45% bull-market support floor."
+        if monthly_high is not None and monthly_high <= 55:
+            return 35.0, "bearish", "Breadth is in the bear-market range and has not reclaimed the 50-55% ceiling."
+        return 45.0, "neutral", "Breadth is in the lower part of the neutral 35-65% churn range."
+
+    if value >= 30:
+        return 42.0, "neutral", "Breadth is near the 30% neutral-market support area where mean-reversion bounces can appear."
+
+    if value < 15:
+        return 18.0, "bearish", "Breadth is below the 15% systemic capitulation zone."
+
+    return 28.0, "bearish", "Breadth is in the 10-45% bear-market range, showing broad participation in downside pressure."
 
 
 def evaluate_technology_support(tech_bars: List[PriceBar], benchmark_bars: List[PriceBar]) -> MarketSignal:
