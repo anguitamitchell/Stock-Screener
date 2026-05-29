@@ -5,6 +5,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+from self_screener.market_condition import build_market_condition
 from self_screener.models import Holding
 from self_screener.pipeline import _report_to_json, screen_etf
 from self_screener.providers.ssga_holdings import fetch_holdings
@@ -77,6 +78,9 @@ class ScreenerRequestHandler(BaseHTTPRequestHandler):
         if parsed.path == "/api/market/history":
             self._handle_market_history(parsed.query)
             return
+        if parsed.path == "/api/market/scores":
+            self._handle_market_scores(parsed.query)
+            return
         if parsed.path == "/api/runs":
             self._handle_runs(parsed.query)
             return
@@ -132,6 +136,34 @@ class ScreenerRequestHandler(BaseHTTPRequestHandler):
         payload.setdefault("metadata", {})["snapshot_path"] = str(snapshot_path)
         payload["snapshot_saved_at"] = payload.get("generated_at")
         self._send_json(payload)
+
+    def _handle_market_scores(self, query: str) -> None:
+        params = parse_qs(query)
+        requested = params.get("etfs", [""])[0]
+        refresh = params.get("refresh", ["false"])[0].lower() == "true"
+        allowed = supported_etfs()
+        if requested:
+            etfs = [item.strip().upper() for item in requested.split(",") if item.strip().upper() in allowed]
+        else:
+            etfs = allowed
+
+        items = []
+        for etf in etfs:
+            try:
+                report = build_market_condition(etf, refresh=refresh)
+                items.append(
+                    {
+                        "etf": etf,
+                        "score": report.overall_score,
+                        "regime": report.overall_regime,
+                        "summary": report.summary,
+                    }
+                )
+            except Exception as exc:
+                items.append({"etf": etf, "score": None, "regime": "unavailable", "error": str(exc)})
+
+        items.sort(key=lambda item: item["score"] if item["score"] is not None else -1, reverse=True)
+        self._send_json({"items": items})
 
     def _handle_research(self, query: str) -> None:
         params = parse_qs(query)
@@ -808,6 +840,10 @@ APP_HTML = r"""<!doctype html>
     }
 
     .shortcut {
+      display: inline-grid;
+      grid-template-columns: auto auto;
+      align-items: center;
+      gap: 6px;
       min-height: 30px;
       border: 1px solid #252b25;
       border-radius: 999px;
@@ -823,6 +859,16 @@ APP_HTML = r"""<!doctype html>
       color: #071006;
       border-color: var(--green);
       background: var(--green);
+    }
+
+    .shortcut-score {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      opacity: 0.95;
+    }
+
+    .shortcut:hover .shortcut-score {
+      color: #071006;
     }
 
     .field, .select {
@@ -2071,6 +2117,8 @@ APP_HTML = r"""<!doctype html>
       reviewItems: [],
       curatedItems: [],
       marketHistory: [],
+      marketScores: {},
+      marketScoresLoading: false,
       runs: [],
       researchPanelTab: "review",
       activeMarketSignal: null,
@@ -2146,6 +2194,14 @@ APP_HTML = r"""<!doctype html>
         if (!response.ok || payload.error) throw new Error(payload.error || "Screen failed");
         state.report = payload;
         state.rows = payload.rated_holdings || [];
+        if (payload.market_condition) {
+          state.marketScores[payload.etf] = {
+            etf: payload.etf,
+            score: payload.market_condition.overall_score,
+            regime: payload.market_condition.overall_regime,
+            summary: payload.market_condition.summary
+          };
+        }
         els.status.textContent = `${payload.etf}: ${state.rows.length} of ${payload.holdings_count} holdings`;
         els.snapshotStatus.textContent = snapshotText(payload);
         saveRunPreferences(payload.etf);
@@ -2200,6 +2256,26 @@ APP_HTML = r"""<!doctype html>
       } catch (error) {
         state.marketHistory = [];
         renderMarketHistory();
+      }
+    }
+
+    async function loadMarketScores(refresh = false) {
+      state.marketScoresLoading = true;
+      renderRecentEtfs();
+      try {
+        const params = new URLSearchParams({ etfs: SUPPORTED_ETFS.join(","), refresh: String(refresh) });
+        const response = await fetch(`/api/market/scores?${params.toString()}`);
+        const payload = await response.json();
+        if (!response.ok || payload.error) throw new Error(payload.error || "Market scores unavailable");
+        state.marketScores = {};
+        (payload.items || []).forEach((item) => {
+          state.marketScores[item.etf] = item;
+        });
+      } catch (error) {
+        state.marketScores = {};
+      } finally {
+        state.marketScoresLoading = false;
+        renderRecentEtfs();
       }
     }
 
@@ -2259,9 +2335,27 @@ APP_HTML = r"""<!doctype html>
     }
 
     function renderRecentEtfs() {
-      els.recentEtfs.innerHTML = recentEtfs().map((etf) => `
-        <button class="shortcut" type="button" data-etf="${escapeHtml(etf)}">${escapeHtml(etf)}</button>
-      `).join("");
+      const items = recentEtfs().map((etf, index) => ({
+        etf,
+        index,
+        score: state.marketScores[etf]?.score,
+        regime: state.marketScores[etf]?.regime
+      })).sort((a, b) => {
+        const aScore = a.score ?? -1;
+        const bScore = b.score ?? -1;
+        if (aScore !== bScore) return bScore - aScore;
+        return a.index - b.index;
+      });
+      els.recentEtfs.innerHTML = items.map((item) => {
+        const score = item.score === null || item.score === undefined
+          ? (state.marketScoresLoading ? "..." : "--")
+          : fmt(item.score);
+        return `
+        <button class="shortcut" type="button" data-etf="${escapeHtml(item.etf)}" title="${escapeHtml(item.regime || "Market score pending")}">
+          <span>${escapeHtml(item.etf)}</span>
+          <span class="shortcut-score ${toneClass(item.regime)}">${escapeHtml(score)}</span>
+        </button>`;
+      }).join("");
     }
 
     function render() {
@@ -3576,7 +3670,8 @@ APP_HTML = r"""<!doctype html>
     loadThemes()
       .then(() => loadReviewQueue())
       .then(() => loadCuratedItems())
-      .then(() => runScreen(false));
+      .then(() => runScreen(false))
+      .then(() => loadMarketScores(false));
   </script>
 </body>
 </html>"""
