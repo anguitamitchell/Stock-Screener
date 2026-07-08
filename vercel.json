@@ -1,0 +1,12 @@
+{
+  "builds": [
+    { "src": "api/index.py", "use": "@vercel/python" },
+    { "src": "api/jobs.py", "use": "@vercel/python", "config": { "maxLambdaSize": "15mb" } },
+    { "src": "public/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/jobs(/.*)?", "dest": "/api/jobs.py" },
+    { "src": "/api/(.*)", "dest": "/api/index.py" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ]
+}

@@ -13,3 +13,9 @@ data/cache/
 data/reports/
 data/dashboards/
 data/review/
+data/jobs/
+.vercel/
+.env.local
+node_modules/
+.vercel
+.env*

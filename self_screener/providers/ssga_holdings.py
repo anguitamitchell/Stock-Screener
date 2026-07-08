@@ -1,15 +1,17 @@
 import html
+import io
 import json
 import re
 import urllib.request
 import zipfile
 from dataclasses import dataclass
-from datetime import datetime
-from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Optional
 from xml.etree import ElementTree
 
 from self_screener.models import Holding
+from self_screener.storage import store
+
+HOLDINGS_CACHE_MAX_AGE_SECONDS = 24 * 60 * 60
 
 
 SSGA_HOLDINGS_URLS: Dict[str, str] = {
@@ -28,10 +30,6 @@ GRNY_HOLDINGS_URL = "https://grannyshots.com/fundstrat-granny-shots-us-large-cap
 STOCKANALYSIS_GRNY_HOLDINGS_URL = "https://stockanalysis.com/etf/grny/holdings/"
 STOCKANALYSIS_QQQ_HOLDINGS_URL = "https://stockanalysis.com/etf/qqq/holdings/"
 NASDAQ_100_URL = "https://api.nasdaq.com/api/quote/list-type/nasdaq100?assetclass=stocks"
-
-DATA_DIR = Path("data")
-RAW_DIR = DATA_DIR / "raw"
-CACHE_DIR = DATA_DIR / "cache"
 
 
 class HoldingsFetchError(RuntimeError):
@@ -124,29 +122,28 @@ def holdings_quality_metadata(etf: str, holdings: List[Holding]) -> dict:
 
 
 def _fetch_ssga_holdings(symbol: str, refresh: bool = False) -> List[Holding]:
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache_path = CACHE_DIR / f"{symbol}_holdings.json"
+    if not refresh:
+        cached = store.get_holdings(symbol, max_age_seconds=HOLDINGS_CACHE_MAX_AGE_SECONDS)
+        if cached is not None:
+            return [Holding(**item) for item in cached]
 
-    if cache_path.exists() and not refresh:
-        return _read_cache(cache_path)
-
-    workbook_path = _download_workbook(symbol, SSGA_HOLDINGS_URLS[symbol], refresh=refresh)
-    rows = _read_xlsx_rows(workbook_path)
+    workbook_bytes = _download_workbook(SSGA_HOLDINGS_URLS[symbol])
+    rows = _read_xlsx_rows(workbook_bytes)
     holdings = _parse_holdings_rows(rows)
 
     if not holdings:
         raise HoldingsFetchError(f"No holdings were parsed for {symbol}.")
 
-    _write_cache(cache_path, holdings)
+    store.set_holdings(symbol, [holding.__dict__ for holding in holdings], source="State Street")
     return holdings
 
 
 def _fetch_grny_holdings(refresh: bool = False) -> List[Holding]:
     symbol = "GRNY"
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache_path = CACHE_DIR / f"{symbol}_holdings.json"
-    if cache_path.exists() and not refresh:
-        return _read_cache(cache_path)
+    if not refresh:
+        cached = store.get_holdings(symbol, max_age_seconds=HOLDINGS_CACHE_MAX_AGE_SECONDS)
+        if cached is not None:
+            return [Holding(**item) for item in cached]
 
     official_html = _download_text(GRNY_HOLDINGS_URL)
     official_tickers = _parse_grny_tickers(official_html)
@@ -173,16 +170,16 @@ def _fetch_grny_holdings(refresh: bool = False) -> List[Holding]:
                 sector="Official theme list; placeholder residual weight",
             )
         )
-    _write_cache(cache_path, holdings)
+    store.set_holdings(symbol, [holding.__dict__ for holding in holdings], source="Granny Shots + StockAnalysis")
     return holdings
 
 
 def _fetch_qqq_holdings(refresh: bool = False) -> List[Holding]:
     symbol = "QQQ"
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache_path = CACHE_DIR / f"{symbol}_holdings.json"
-    if cache_path.exists() and not refresh:
-        return _read_cache(cache_path)
+    if not refresh:
+        cached = store.get_holdings(symbol, max_age_seconds=HOLDINGS_CACHE_MAX_AGE_SECONDS)
+        if cached is not None:
+            return [Holding(**item) for item in cached]
 
     index_holdings = _fetch_nasdaq100_holdings()
     weighted_holdings = _fetch_stockanalysis_holdings(STOCKANALYSIS_QQQ_HOLDINGS_URL)
@@ -210,7 +207,7 @@ def _fetch_qqq_holdings(refresh: bool = False) -> List[Holding]:
                 sector="Nasdaq-100 constituent list; placeholder residual weight",
             )
         )
-    _write_cache(cache_path, holdings)
+    store.set_holdings(symbol, [holding.__dict__ for holding in holdings], source="Nasdaq + StockAnalysis")
     return holdings
 
 
@@ -349,13 +346,7 @@ def _merge_tickers(*groups: List[str]) -> List[str]:
     return merged
 
 
-def _download_workbook(symbol: str, url: str, refresh: bool) -> Path:
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
-    workbook_path = RAW_DIR / f"{symbol}_holdings.xlsx"
-
-    if workbook_path.exists() and not refresh:
-        return workbook_path
-
+def _download_workbook(url: str) -> bytes:
     request = urllib.request.Request(
         url,
         headers={
@@ -366,21 +357,19 @@ def _download_workbook(symbol: str, url: str, refresh: bool) -> Path:
 
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
-            workbook_path.write_bytes(response.read())
+            return response.read()
     except Exception as exc:
-        raise HoldingsFetchError(f"Could not download holdings for {symbol}: {exc}") from exc
-
-    return workbook_path
+        raise HoldingsFetchError(f"Could not download holdings workbook: {exc}") from exc
 
 
-def _read_xlsx_rows(path: Path) -> List[List[str]]:
+def _read_xlsx_rows(workbook_bytes: bytes) -> List[List[str]]:
     try:
-        with zipfile.ZipFile(path) as workbook:
+        with zipfile.ZipFile(io.BytesIO(workbook_bytes)) as workbook:
             shared_strings = _read_shared_strings(workbook)
             sheet_name = _first_sheet_name(workbook)
             sheet_xml = workbook.read(sheet_name)
     except Exception as exc:
-        raise HoldingsFetchError(f"Could not read workbook {path}: {exc}") from exc
+        raise HoldingsFetchError(f"Could not read holdings workbook: {exc}") from exc
 
     root = ElementTree.fromstring(sheet_xml)
     namespace = {"x": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
@@ -521,19 +510,6 @@ def _parse_float(value: Optional[str]) -> Optional[float]:
         return float(cleaned)
     except ValueError:
         return None
-
-
-def _write_cache(path: Path, holdings: List[Holding]) -> None:
-    payload = {
-        "cached_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
-        "holdings": [holding.__dict__ for holding in holdings],
-    }
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-
-def _read_cache(path: Path) -> List[Holding]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    return [Holding(**item) for item in payload.get("holdings", [])]
 
 
 HOLDINGS_SOURCES = _build_source_registry()

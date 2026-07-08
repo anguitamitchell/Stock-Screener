@@ -2,14 +2,12 @@ import json
 import time
 import urllib.parse
 import urllib.request
-from datetime import datetime
-from pathlib import Path
 from typing import Dict
 
 from self_screener.models import CompanyResearch
+from self_screener.storage import store
 
-
-CACHE_DIR = Path("data") / "cache" / "research"
+RESEARCH_CACHE_MAX_AGE_SECONDS = 7 * 24 * 60 * 60
 YAHOO_SEARCH_URL = "https://query1.finance.yahoo.com/v1/finance/search"
 YAHOO_SUMMARY_URL = "https://query2.finance.yahoo.com/v10/finance/quoteSummary/{ticker}"
 WIKIPEDIA_API_URL = "https://en.wikipedia.org/w/api.php"
@@ -22,11 +20,12 @@ def fetch_company_research(
     sleep_seconds: float = 0.0,
 ) -> CompanyResearch:
     normalized = _normalize_ticker(ticker)
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache_path = CACHE_DIR / f"{normalized}.json"
 
-    if cache_path.exists() and not refresh:
-        return _read_cache(cache_path)
+    if not refresh:
+        cached = store.get_research(normalized, max_age_seconds=RESEARCH_CACHE_MAX_AGE_SECONDS)
+        if cached is not None:
+            fields = CompanyResearch.__dataclass_fields__
+            return CompanyResearch(**{key: value for key, value in cached.items() if key in fields})
 
     if sleep_seconds:
         time.sleep(sleep_seconds)
@@ -41,7 +40,7 @@ def fetch_company_research(
             error=str(exc),
         )
 
-    _write_cache(cache_path, research)
+    store.set_research(normalized, research.__dict__)
     return research
 
 
@@ -163,16 +162,3 @@ def _normalize_ticker(ticker: str) -> str:
     return ticker.upper().replace(".", "-")
 
 
-def _write_cache(path: Path, research: CompanyResearch) -> None:
-    payload = {
-        "cached_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
-        "research": research.__dict__,
-    }
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-
-def _read_cache(path: Path) -> CompanyResearch:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    fields = CompanyResearch.__dataclass_fields__
-    research = {key: value for key, value in payload["research"].items() if key in fields}
-    return CompanyResearch(**research)

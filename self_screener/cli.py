@@ -6,7 +6,9 @@ from self_screener.dashboard import write_dashboard
 from self_screener.market_condition import build_market_condition, write_market_condition
 from self_screener.pipeline import screen_etf, write_report
 from self_screener.providers.ssga_holdings import HoldingsFetchError, supported_etfs
-from self_screener.web_app import DEFAULT_HOST, DEFAULT_PORT, ServerStartupError, run_server
+
+DEFAULT_HOST = "127.0.0.1"
+DEFAULT_PORT = 8765
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -47,14 +49,14 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"Holdings error: {exc}", file=sys.stderr)
             return 1
 
-        report_path = write_report(report)
+        write_report(report)
         print(f"{report.etf}: prepared {len(report.rated_holdings)} of {report.holdings_count} holdings")
         if report.market_condition:
             print(
                 f"Market: {report.market_condition.overall_score} "
                 f"{report.market_condition.overall_regime}"
             )
-        print(f"Report: {report_path}")
+        print(f"Report: saved ({report.etf}_screen)")
         if args.dashboard:
             dashboard_path = write_dashboard(report)
             print(f"Dashboard: {dashboard_path}")
@@ -62,7 +64,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.command == "market":
         report = build_market_condition(args.ticker, refresh=args.refresh)
-        report_path = write_market_condition(report)
+        write_market_condition(report)
         print(f"{report.ticker}: Market {report.overall_score} {report.overall_regime}")
         print(f"DeMark: {report.demark.score} {report.demark.regime}")
         print(f"Structure: {report.structural_weakness.score} {report.structural_weakness.regime}")
@@ -70,10 +72,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"Defensives: {report.defensive_rotation.score} {report.defensive_rotation.regime}")
         print(f"Credit: {report.credit_risk.score} {report.credit_risk.regime}")
         print(f"Dollar/Yield: {report.dollar_yield_shock.score} {report.dollar_yield_shock.regime}")
-        print(f"Market condition report: {report_path}")
+        print(f"Market condition report: saved ({report.ticker}_market_condition)")
         return 0
 
     if args.command == "serve":
+        from self_screener.web_app import ServerStartupError, run_server
+
         try:
             run_server(args.host, args.port)
         except ServerStartupError as exc:

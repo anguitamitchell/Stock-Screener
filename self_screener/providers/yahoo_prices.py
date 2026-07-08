@@ -2,14 +2,12 @@ import json
 import time
 import urllib.parse
 import urllib.request
-from datetime import datetime
-from pathlib import Path
 from typing import Dict, List, Optional
 
 from self_screener.models import PriceBar, PriceSnapshot
+from self_screener.storage import store
 
-
-CACHE_DIR = Path("data") / "cache" / "prices"
+PRICE_CACHE_MAX_AGE_SECONDS = 24 * 60 * 60
 YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
 
 
@@ -19,11 +17,11 @@ class PriceFetchError(RuntimeError):
 
 def fetch_price_snapshot(ticker: str, refresh: bool = False, sleep_seconds: float = 0.0) -> PriceSnapshot:
     normalized = _normalize_ticker(ticker)
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache_path = CACHE_DIR / f"{normalized}.json"
 
-    if cache_path.exists() and not refresh:
-        return _read_cache(cache_path)
+    if not refresh:
+        cached = store.get_price_snapshot(normalized, max_age_seconds=PRICE_CACHE_MAX_AGE_SECONDS)
+        if cached is not None:
+            return _snapshot_from_cache(cached)
 
     if sleep_seconds:
         time.sleep(sleep_seconds)
@@ -38,24 +36,24 @@ def fetch_price_snapshot(ticker: str, refresh: bool = False, sleep_seconds: floa
             error=str(exc),
         )
 
-    _write_cache(cache_path, snapshot)
+    store.set_price_snapshot(normalized, snapshot.__dict__)
     return snapshot
 
 
 def fetch_price_history(ticker: str, refresh: bool = False, sleep_seconds: float = 0.0) -> List[PriceBar]:
     normalized = _normalize_ticker(ticker)
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache_path = CACHE_DIR / f"{normalized}_history.json"
 
-    if cache_path.exists() and not refresh:
-        return _read_history_cache(cache_path)
+    if not refresh:
+        cached = store.get_price_history(normalized, max_age_seconds=PRICE_CACHE_MAX_AGE_SECONDS)
+        if cached is not None:
+            return [PriceBar(**bar) for bar in cached]
 
     if sleep_seconds:
         time.sleep(sleep_seconds)
 
     payload = _fetch_chart_payload(normalized)
     bars = _history_from_payload(payload)
-    _write_history_cache(cache_path, bars)
+    store.set_price_history(normalized, [bar.__dict__ for bar in bars])
     return bars
 
 
@@ -249,29 +247,6 @@ def _normalize_ticker(ticker: str) -> str:
     return ticker.upper().replace(".", "-")
 
 
-def _write_cache(path: Path, snapshot: PriceSnapshot) -> None:
-    payload = {
-        "cached_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
-        "snapshot": snapshot.__dict__,
-    }
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-
-def _read_cache(path: Path) -> PriceSnapshot:
-    payload = json.loads(path.read_text(encoding="utf-8"))
+def _snapshot_from_cache(cached: dict) -> PriceSnapshot:
     fields = PriceSnapshot.__dataclass_fields__
-    snapshot = {key: value for key, value in payload["snapshot"].items() if key in fields}
-    return PriceSnapshot(**snapshot)
-
-
-def _write_history_cache(path: Path, bars: List[PriceBar]) -> None:
-    payload = {
-        "cached_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
-        "bars": [bar.__dict__ for bar in bars],
-    }
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-
-def _read_history_cache(path: Path) -> List[PriceBar]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    return [PriceBar(**bar) for bar in payload.get("bars", [])]
+    return PriceSnapshot(**{key: value for key, value in cached.items() if key in fields})

@@ -1,0 +1,2536 @@
+{
+  "etf": "SPY",
+  "generated_at": "2026-07-07T22:24:09Z",
+  "source": "State Street public daily holdings workbook",
+  "holdings_count": 503,
+  "rated_holdings": [
+    {
+      "holding": {
+        "ticker": "AMD",
+        "name": "ADVANCED MICRO DEVICES",
+        "weight": 1.389142,
+        "shares_held": 19716768.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "AMD",
+        "last_close": 516.11,
+        "previous_close": 552.05,
+        "change_percent": -6.5103,
+        "average_volume_20d": 31266123.05,
+        "sma_20": 520.7645,
+        "sma_50": 469.5682,
+        "sma_200": 281.9291,
+        "close_vs_sma_20_percent": -0.8938,
+        "close_vs_sma_50_percent": 9.9116,
+        "close_vs_sma_200_percent": 83.0638,
+        "return_5d_percent": -4.3337,
+        "return_20d_percent": 10.663,
+        "return_60d_percent": 118.0992,
+        "return_120d_percent": 148.5002,
+        "low_20d": 437.23,
+        "high_20d": 584.73,
+        "low_60d": 238.96,
+        "high_60d": 584.73,
+        "atr_14": 38.6457,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 78.0,
+        "label": "narrative leader",
+        "reasons": [
+          "Matched themes: Enterprise AI leadership (direct), Grid and data-center demand (direct).",
+          "AI accelerators, CPUs, and data-center compute exposure."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "enterprise_ai_leadership": "direct",
+          "grid_data_center_demand": "direct"
+        }
+      },
+      "technical": {
+        "score": 80.6,
+        "label": "bullish",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 70.0/70, bullish; price > 200D is true, 20D > 50D is true, 50D > 200D is true.",
+          "Price bucket: 0.0/10; current price > 20D is false.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "70.0",
+          "momentum_true_count": "3",
+          "momentum_label": "bullish",
+          "price_points": "0.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "false",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 477.46,
+        "entry_high": 516.11,
+        "breakout_trigger": 524.63,
+        "stop_loss": 456.04,
+        "target_1": 636.25,
+        "target_2": 696.31,
+        "reward_risk": 2.0,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $477.46-$516.11; breakout confirmation above $524.63.",
+          "Risk exit below $456.04; target exits near $636.25 and $696.31.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 79.3,
+      "rating": "Buy",
+      "rating_reasons": [
+        "Final score is strong using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "AMZN",
+        "name": "AMAZON.COM INC",
+        "weight": 3.688013,
+        "shares_held": 118354650.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "AMZN",
+        "last_close": 245.98,
+        "previous_close": 244.16,
+        "change_percent": 0.7454,
+        "average_volume_20d": 62915900.55,
+        "sma_20": 239.762,
+        "sma_50": 255.0108,
+        "sma_200": 233.1049,
+        "close_vs_sma_20_percent": 2.5934,
+        "close_vs_sma_50_percent": -3.5413,
+        "close_vs_sma_200_percent": 5.5233,
+        "return_5d_percent": 2.4319,
+        "return_20d_percent": -0.0203,
+        "return_60d_percent": 5.2771,
+        "return_120d_percent": -0.1988,
+        "low_20d": 225.55,
+        "high_20d": 250.43,
+        "low_60d": 225.55,
+        "high_60d": 278.56,
+        "atr_14": 8.2254,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 90.0,
+        "label": "narrative leader",
+        "reasons": [
+          "Matched themes: Millennial spending power (direct), Labor-supply advantage (direct), Enterprise AI leadership (direct), Grid and data-center demand (direct).",
+          "E-commerce convenience, AWS AI infrastructure, logistics automation, and large-scale data-center demand."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "millennial_spending_power": "direct",
+          "labor_supply_advantage": "direct",
+          "enterprise_ai_leadership": "direct",
+          "grid_data_center_demand": "direct"
+        }
+      },
+      "technical": {
+        "score": 67.3,
+        "label": "constructive",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 46.7/70, neutral; price > 200D is true, 20D > 50D is false, 50D > 200D is true.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "46.7",
+          "momentum_true_count": "2",
+          "momentum_label": "neutral",
+          "price_points": "10.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "false",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 239.76,
+        "entry_high": 247.99,
+        "breakout_trigger": 251.25,
+        "stop_loss": 236.88,
+        "target_1": 270.2,
+        "target_2": 281.3,
+        "reward_risk": 2.0,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $239.76-$247.99; breakout confirmation above $251.25.",
+          "Risk exit below $236.88; target exits near $270.2 and $281.3.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 78.7,
+      "rating": "Buy",
+      "rating_reasons": [
+        "Final score is strong using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "MU",
+        "name": "MICRON TECHNOLOGY INC",
+        "weight": 1.713703,
+        "shares_held": 13635688.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "MU",
+        "last_close": 938.38,
+        "previous_close": 984.75,
+        "change_percent": -4.7088,
+        "average_volume_20d": 57000550.85,
+        "sma_20": 1046.4275,
+        "sma_50": 871.164,
+        "sma_200": 452.3661,
+        "close_vs_sma_20_percent": -10.3254,
+        "close_vs_sma_50_percent": 7.7157,
+        "close_vs_sma_200_percent": 107.4382,
+        "return_5d_percent": -18.0655,
+        "return_20d_percent": 8.6075,
+        "return_60d_percent": 122.6234,
+        "return_120d_percent": 171.31,
+        "low_20d": 854.35,
+        "high_20d": 1255.0,
+        "low_60d": 408.5,
+        "high_60d": 1255.0,
+        "atr_14": 104.405,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 76.0,
+        "label": "narrative leader",
+        "reasons": [
+          "Matched themes: Enterprise AI leadership (direct), Grid and data-center demand (direct).",
+          "Memory demand tied to AI servers, data centers, and compute intensity."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "enterprise_ai_leadership": "direct",
+          "grid_data_center_demand": "direct"
+        }
+      },
+      "technical": {
+        "score": 80.6,
+        "label": "bullish",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 70.0/70, bullish; price > 200D is true, 20D > 50D is true, 50D > 200D is true.",
+          "Price bucket: 0.0/10; current price > 20D is false.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "70.0",
+          "momentum_true_count": "3",
+          "momentum_label": "bullish",
+          "price_points": "0.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "false",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 871.16,
+        "entry_high": 947.76,
+        "breakout_trigger": 1056.87,
+        "stop_loss": 834.62,
+        "target_1": 1174.05,
+        "target_2": 1287.19,
+        "reward_risk": 2.0,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $871.16-$947.76; breakout confirmation above $1056.87.",
+          "Risk exit below $834.62; target exits near $1174.05 and $1287.19.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 78.3,
+      "rating": "Buy",
+      "rating_reasons": [
+        "Final score is strong using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "NVDA",
+        "name": "NVIDIA CORP",
+        "weight": 7.308189,
+        "shares_held": 292832556.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "NVDA",
+        "last_close": 196.93,
+        "previous_close": 195.55,
+        "change_percent": 0.7057,
+        "average_volume_20d": 149434487.05,
+        "sma_20": 201.921,
+        "sma_50": 209.6028,
+        "sma_200": 191.2638,
+        "close_vs_sma_20_percent": -2.4718,
+        "close_vs_sma_50_percent": -6.0461,
+        "close_vs_sma_200_percent": 2.9625,
+        "return_5d_percent": 1.0053,
+        "return_20d_percent": -3.9834,
+        "return_60d_percent": 7.0795,
+        "return_120d_percent": 6.4832,
+        "low_20d": 189.8,
+        "high_20d": 213.99,
+        "low_60d": 184.3,
+        "high_60d": 236.54,
+        "atr_14": 6.3171,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 95.0,
+        "label": "narrative leader",
+        "reasons": [
+          "Matched themes: Enterprise AI leadership (direct), Grid and data-center demand (direct).",
+          "Core AI accelerator and networking platform; direct beneficiary of AI data-center buildout."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "enterprise_ai_leadership": "direct",
+          "grid_data_center_demand": "direct"
+        }
+      },
+      "technical": {
+        "score": 57.3,
+        "label": "neutral",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 46.7/70, neutral; price > 200D is true, 20D > 50D is false, 50D > 200D is true.",
+          "Price bucket: 0.0/10; current price > 20D is false.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "46.7",
+          "momentum_true_count": "2",
+          "momentum_label": "neutral",
+          "price_points": "0.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "false",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "false",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 196.93,
+        "entry_high": 198.9,
+        "breakout_trigger": 202.55,
+        "stop_loss": 189.05,
+        "target_1": 218.59,
+        "target_2": 228.44,
+        "reward_risk": 2.0,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $196.93-$198.9; breakout confirmation above $202.55.",
+          "Risk exit below $189.05; target exits near $218.59 and $228.44.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 76.2,
+      "rating": "Buy",
+      "rating_reasons": [
+        "Final score is strong using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "INTC",
+        "name": "INTEL CORP",
+        "weight": 0.891005,
+        "shares_held": 57131592.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "INTC",
+        "last_close": 110.39,
+        "previous_close": 122.2,
+        "change_percent": -9.6645,
+        "average_volume_20d": 132015113.1,
+        "sma_20": 124.2065,
+        "sma_50": 115.392,
+        "sma_200": 61.2466,
+        "close_vs_sma_20_percent": -11.1238,
+        "close_vs_sma_50_percent": -4.3348,
+        "close_vs_sma_200_percent": 80.2386,
+        "return_5d_percent": -16.1934,
+        "return_20d_percent": 11.3139,
+        "return_60d_percent": 78.8561,
+        "return_120d_percent": 150.5447,
+        "low_20d": 99.46,
+        "high_20d": 142.35,
+        "low_60d": 60.75,
+        "high_60d": 142.35,
+        "atr_14": 11.245,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 70.0,
+        "label": "aligned",
+        "reasons": [
+          "Matched themes: Enterprise AI leadership (direct), Grid and data-center demand (direct), Energy-security tailwinds (direct).",
+          "Semiconductor supply chain, domestic manufacturing, AI compute, and reshoring exposure."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "enterprise_ai_leadership": "direct",
+          "grid_data_center_demand": "direct",
+          "energy_security_tailwinds": "direct"
+        }
+      },
+      "technical": {
+        "score": 80.6,
+        "label": "bullish",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 70.0/70, bullish; price > 200D is true, 20D > 50D is true, 50D > 200D is true.",
+          "Price bucket: 0.0/10; current price > 20D is false.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "70.0",
+          "momentum_true_count": "3",
+          "momentum_label": "bullish",
+          "price_points": "0.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "false",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 99.46,
+        "entry_high": 110.7,
+        "breakout_trigger": 116.52,
+        "stop_loss": 95.52,
+        "target_1": 141.07,
+        "target_2": 156.25,
+        "reward_risk": 2.0,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $99.46-$110.7; breakout confirmation above $116.52.",
+          "Risk exit below $95.52; target exits near $141.07 and $156.25.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 75.3,
+      "rating": "Buy",
+      "rating_reasons": [
+        "Final score is strong using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "GOOGL",
+        "name": "ALPHABET INC CL A",
+        "weight": 3.315741,
+        "shares_held": 70895949.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "GOOGL",
+        "last_close": 367.03,
+        "previous_close": 366.46,
+        "change_percent": 0.1555,
+        "average_volume_20d": 36788460.8,
+        "sma_20": 358.1825,
+        "sma_50": 372.0764,
+        "sma_200": 317.3175,
+        "close_vs_sma_20_percent": 2.4701,
+        "close_vs_sma_50_percent": -1.3563,
+        "close_vs_sma_200_percent": 15.6665,
+        "return_5d_percent": 3.7834,
+        "return_20d_percent": -0.407,
+        "return_60d_percent": 15.2407,
+        "return_120d_percent": 10.5978,
+        "low_20d": 330.2,
+        "high_20d": 376.0,
+        "low_60d": 315.47,
+        "high_60d": 408.61,
+        "atr_14": 11.7807,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 82.0,
+        "label": "narrative leader",
+        "reasons": [
+          "Matched themes: Millennial spending power (direct), Enterprise AI leadership (direct), Grid and data-center demand (direct).",
+          "Search, YouTube, cloud, AI models, data infrastructure, and consumer internet ecosystem."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "millennial_spending_power": "direct",
+          "enterprise_ai_leadership": "direct",
+          "grid_data_center_demand": "direct"
+        }
+      },
+      "technical": {
+        "score": 67.3,
+        "label": "constructive",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 46.7/70, neutral; price > 200D is true, 20D > 50D is false, 50D > 200D is true.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "46.7",
+          "momentum_true_count": "2",
+          "momentum_label": "neutral",
+          "price_points": "10.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "false",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 358.18,
+        "entry_high": 369.96,
+        "breakout_trigger": 373.25,
+        "stop_loss": 354.06,
+        "target_1": 401.77,
+        "target_2": 417.68,
+        "reward_risk": 2.0,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $358.18-$369.96; breakout confirmation above $373.25.",
+          "Risk exit below $354.06; target exits near $401.77 and $417.68.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 74.7,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "GOOG",
+        "name": "ALPHABET INC CL C",
+        "weight": 2.661315,
+        "shares_held": 57146529.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "GOOG",
+        "last_close": 363.62,
+        "previous_close": 364.9,
+        "change_percent": -0.3508,
+        "average_volume_20d": 24652780.5,
+        "sma_20": 356.1625,
+        "sma_50": 369.3048,
+        "sma_200": 316.7033,
+        "close_vs_sma_20_percent": 2.0938,
+        "close_vs_sma_50_percent": -1.5393,
+        "close_vs_sma_200_percent": 14.8141,
+        "return_5d_percent": 3.5129,
+        "return_20d_percent": -0.5851,
+        "return_60d_percent": 14.935,
+        "return_120d_percent": 9.2838,
+        "low_20d": 333.69,
+        "high_20d": 373.6,
+        "low_60d": 313.69,
+        "high_60d": 404.47,
+        "atr_14": 11.3955,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 82.0,
+        "label": "narrative leader",
+        "reasons": [
+          "Matched themes: Millennial spending power (direct), Enterprise AI leadership (direct), Grid and data-center demand (direct).",
+          "Search, YouTube, cloud, AI models, data infrastructure, and consumer internet ecosystem."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "millennial_spending_power": "direct",
+          "enterprise_ai_leadership": "direct",
+          "grid_data_center_demand": "direct"
+        }
+      },
+      "technical": {
+        "score": 67.3,
+        "label": "constructive",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 46.7/70, neutral; price > 200D is true, 20D > 50D is false, 50D > 200D is true.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "46.7",
+          "momentum_true_count": "2",
+          "momentum_label": "neutral",
+          "price_points": "10.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "false",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 356.16,
+        "entry_high": 367.26,
+        "breakout_trigger": 370.44,
+        "stop_loss": 352.17,
+        "target_1": 397.42,
+        "target_2": 412.5,
+        "reward_risk": 2.0,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $356.16-$367.26; breakout confirmation above $370.44.",
+          "Risk exit below $352.17; target exits near $397.42 and $412.5.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 74.7,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "LLY",
+        "name": "ELI LILLY + CO",
+        "weight": 1.464979,
+        "shares_held": 9565238.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "LLY",
+        "last_close": 1235.5601,
+        "previous_close": 1200.0601,
+        "change_percent": 2.9582,
+        "average_volume_20d": 3345381.05,
+        "sma_20": 1155.9715,
+        "sma_50": 1066.8518,
+        "sma_200": 989.5702,
+        "close_vs_sma_20_percent": 6.885,
+        "close_vs_sma_50_percent": 15.8137,
+        "close_vs_sma_200_percent": 24.8583,
+        "return_5d_percent": 0.4578,
+        "return_20d_percent": 9.2044,
+        "return_60d_percent": 29.3523,
+        "return_120d_percent": 14.2979,
+        "low_20d": 1079.22,
+        "high_20d": 1249.45,
+        "low_60d": 850.51,
+        "high_60d": 1249.45,
+        "atr_14": 39.655,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 58.0,
+        "label": "aligned",
+        "reasons": [
+          "Matched themes: Millennial spending power (indirect), Labor-supply advantage (indirect).",
+          "Wellness and healthcare demand, with productivity leverage from scale and advanced manufacturing."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "millennial_spending_power": "indirect",
+          "labor_supply_advantage": "indirect"
+        }
+      },
+      "technical": {
+        "score": 90.6,
+        "label": "bullish",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 70.0/70, bullish; price > 200D is true, 20D > 50D is true, 50D > 200D is true.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "70.0",
+          "momentum_true_count": "3",
+          "momentum_label": "bullish",
+          "price_points": "10.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 1155.97,
+        "entry_high": 1195.63,
+        "breakout_trigger": 1253.42,
+        "stop_loss": 1142.09,
+        "target_1": 1302.69,
+        "target_2": 1356.23,
+        "reward_risk": 2.0,
+        "label": "wait for pullback",
+        "notes": [
+          "Wait For Pullback: preferred entry zone is $1155.97-$1195.63; breakout confirmation above $1253.42.",
+          "Risk exit below $1142.09; target exits near $1302.69 and $1356.23.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 74.3,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "CSCO",
+        "name": "CISCO SYSTEMS INC",
+        "weight": 0.694415,
+        "shares_held": 47737271.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "CSCO",
+        "last_close": 111.79,
+        "previous_close": 113.98,
+        "change_percent": -1.9214,
+        "average_volume_20d": 25669515.65,
+        "sma_20": 118.4315,
+        "sma_50": 111.967,
+        "sma_200": 85.3702,
+        "close_vs_sma_20_percent": -5.6079,
+        "close_vs_sma_50_percent": -0.1581,
+        "close_vs_sma_200_percent": 30.9473,
+        "return_5d_percent": -5.0212,
+        "return_20d_percent": -8.0977,
+        "return_60d_percent": 34.4115,
+        "return_120d_percent": 51.0472,
+        "low_20d": 111.67,
+        "high_20d": 126.44,
+        "low_60d": 80.88,
+        "high_60d": 130.37,
+        "atr_14": 3.4479,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 68.0,
+        "label": "aligned",
+        "reasons": [
+          "Matched themes: Enterprise AI leadership (direct), Grid and data-center demand (direct).",
+          "Networking, security, and enterprise infrastructure tied to AI/data-center traffic."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "enterprise_ai_leadership": "direct",
+          "grid_data_center_demand": "direct"
+        }
+      },
+      "technical": {
+        "score": 80.6,
+        "label": "bullish",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 70.0/70, bullish; price > 200D is true, 20D > 50D is true, 50D > 200D is true.",
+          "Price bucket: 0.0/10; current price > 20D is false.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "70.0",
+          "momentum_true_count": "3",
+          "momentum_label": "bullish",
+          "price_points": "0.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "false",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 111.79,
+        "entry_high": 112.91,
+        "breakout_trigger": 112.31,
+        "stop_loss": 110.46,
+        "target_1": 117.8,
+        "target_2": 120.24,
+        "reward_risk": 2.0,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $111.79-$112.91; breakout confirmation above $112.31.",
+          "Risk exit below $110.46; target exits near $117.8 and $120.24.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 74.3,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "CAT",
+        "name": "CATERPILLAR INC",
+        "weight": 0.689512,
+        "shares_held": 5570232.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "CAT",
+        "last_close": 940.12,
+        "previous_close": 969.92,
+        "change_percent": -3.0724,
+        "average_volume_20d": 3971999.35,
+        "sma_20": 966.7175,
+        "sma_50": 918.4292,
+        "sma_200": 701.8772,
+        "close_vs_sma_20_percent": -2.7513,
+        "close_vs_sma_50_percent": 2.3617,
+        "close_vs_sma_200_percent": 33.9437,
+        "return_5d_percent": -9.008,
+        "return_20d_percent": 3.9634,
+        "return_60d_percent": 19.4455,
+        "return_120d_percent": 49.2799,
+        "low_20d": 854.73,
+        "high_20d": 1073.46,
+        "low_60d": 754.45,
+        "high_60d": 1073.46,
+        "atr_14": 46.8364,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 68.0,
+        "label": "aligned",
+        "reasons": [
+          "Matched themes: Grid and data-center demand (direct), Energy-security tailwinds (direct), Labor-supply advantage (indirect).",
+          "Infrastructure, power systems, mining/energy equipment, and reshoring buildout."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "grid_data_center_demand": "direct",
+          "energy_security_tailwinds": "direct",
+          "labor_supply_advantage": "indirect"
+        }
+      },
+      "technical": {
+        "score": 80.6,
+        "label": "bullish",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 70.0/70, bullish; price > 200D is true, 20D > 50D is true, 50D > 200D is true.",
+          "Price bucket: 0.0/10; current price > 20D is false.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "70.0",
+          "momentum_true_count": "3",
+          "momentum_label": "bullish",
+          "price_points": "0.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "false",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 940.12,
+        "entry_high": 949.52,
+        "breakout_trigger": 971.4,
+        "stop_loss": 902.04,
+        "target_1": 1044.49,
+        "target_2": 1091.98,
+        "reward_risk": 2.0,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $940.12-$949.52; breakout confirmation above $971.4.",
+          "Risk exit below $902.04; target exits near $1044.49 and $1091.98.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 74.3,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "AVGO",
+        "name": "BROADCOM INC",
+        "weight": 2.731704,
+        "shares_held": 57246057.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "AVGO",
+        "last_close": 370.78,
+        "previous_close": 373.9,
+        "change_percent": -0.8344,
+        "average_volume_20d": 31119970.75,
+        "sma_20": 381.3175,
+        "sma_50": 407.4708,
+        "sma_200": 361.6431,
+        "close_vs_sma_20_percent": -2.7634,
+        "close_vs_sma_50_percent": -9.0045,
+        "close_vs_sma_200_percent": 2.5265,
+        "return_5d_percent": -0.4484,
+        "return_20d_percent": -3.8758,
+        "return_60d_percent": 4.4716,
+        "return_120d_percent": 5.2724,
+        "low_20d": 356.43,
+        "high_20d": 414.64,
+        "low_60d": 356.43,
+        "high_60d": 495.0,
+        "atr_14": 16.3571,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 85.0,
+        "label": "narrative leader",
+        "reasons": [
+          "Matched themes: Enterprise AI leadership (direct), Grid and data-center demand (direct).",
+          "AI networking, custom silicon, infrastructure software, and data-center connectivity exposure."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "enterprise_ai_leadership": "direct",
+          "grid_data_center_demand": "direct"
+        }
+      },
+      "technical": {
+        "score": 57.3,
+        "label": "neutral",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 46.7/70, neutral; price > 200D is true, 20D > 50D is false, 50D > 200D is true.",
+          "Price bucket: 0.0/10; current price > 20D is false.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "46.7",
+          "momentum_true_count": "2",
+          "momentum_label": "neutral",
+          "price_points": "0.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "false",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "false",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 370.78,
+        "entry_high": 374.49,
+        "breakout_trigger": 382.95,
+        "stop_loss": 355.92,
+        "target_1": 411.63,
+        "target_2": 430.2,
+        "reward_risk": 2.0,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $370.78-$374.49; breakout confirmation above $382.95.",
+          "Risk exit below $355.92; target exits near $411.63 and $430.2.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 71.2,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "XOM",
+        "name": "EXXONMOBIL HOLDINGS CORP",
+        "weight": 0.872802,
+        "shares_held": 50123505.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "XOM",
+        "last_close": 141.69,
+        "previous_close": 136.44,
+        "change_percent": 3.8478,
+        "average_volume_20d": 18299194.45,
+        "sma_20": 140.9845,
+        "sma_50": 147.4596,
+        "sma_200": 135.9141,
+        "close_vs_sma_20_percent": 0.5004,
+        "close_vs_sma_50_percent": -3.9127,
+        "close_vs_sma_200_percent": 4.2497,
+        "return_5d_percent": 4.1379,
+        "return_20d_percent": -5.4896,
+        "return_60d_percent": -8.6107,
+        "return_120d_percent": 14.2385,
+        "low_20d": 134.95,
+        "high_20d": 153.81,
+        "low_60d": 134.95,
+        "high_60d": 163.68,
+        "atr_14": 2.6607,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 72.0,
+        "label": "aligned",
+        "reasons": [
+          "Matched themes: Energy-security tailwinds (direct), Grid and data-center demand (indirect).",
+          "Energy security, U.S. production advantage, industrial demand, and power-adjacent tailwinds."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "energy_security_tailwinds": "direct",
+          "grid_data_center_demand": "indirect"
+        }
+      },
+      "technical": {
+        "score": 67.3,
+        "label": "constructive",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 46.7/70, neutral; price > 200D is true, 20D > 50D is false, 50D > 200D is true.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "46.7",
+          "momentum_true_count": "2",
+          "momentum_label": "neutral",
+          "price_points": "10.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "false",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 140.98,
+        "entry_high": 143.11,
+        "breakout_trigger": 147.73,
+        "stop_loss": 140.05,
+        "target_1": 149.21,
+        "target_2": 152.27,
+        "reward_risk": 2.0,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $140.98-$143.11; breakout confirmation above $147.73.",
+          "Risk exit below $140.05; target exits near $149.21 and $152.27.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 69.7,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "JPM",
+        "name": "JPMORGAN CHASE + CO",
+        "weight": 1.396474,
+        "shares_held": 32399875.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "JPM",
+        "last_close": 339.22,
+        "previous_close": 337.72,
+        "change_percent": 0.4442,
+        "average_volume_20d": 10117989.55,
+        "sma_20": 327.091,
+        "sma_50": 313.656,
+        "sma_200": 308.7698,
+        "close_vs_sma_20_percent": 3.7081,
+        "close_vs_sma_50_percent": 8.1503,
+        "close_vs_sma_200_percent": 9.8618,
+        "return_5d_percent": 2.9843,
+        "return_20d_percent": 8.5956,
+        "return_60d_percent": 9.3094,
+        "return_120d_percent": 4.5394,
+        "low_20d": 308.88,
+        "high_20d": 343.45,
+        "low_60d": 293.67,
+        "high_60d": 343.45,
+        "atr_14": 7.8579,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 45.0,
+        "label": "partial fit",
+        "reasons": [
+          "Matched themes: Labor-supply advantage (indirect).",
+          "Scale financial platform with technology and automation leverage."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "labor_supply_advantage": "indirect"
+        }
+      },
+      "technical": {
+        "score": 90.6,
+        "label": "bullish",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 70.0/70, bullish; price > 200D is true, 20D > 50D is true, 50D > 200D is true.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "70.0",
+          "momentum_true_count": "3",
+          "momentum_label": "bullish",
+          "price_points": "10.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 327.09,
+        "entry_high": 334.95,
+        "breakout_trigger": 344.24,
+        "stop_loss": 324.34,
+        "target_1": 356.17,
+        "target_2": 366.77,
+        "reward_risk": 2.0,
+        "label": "wait for pullback",
+        "notes": [
+          "Wait For Pullback: preferred entry zone is $327.09-$334.95; breakout confirmation above $344.24.",
+          "Risk exit below $324.34; target exits near $356.17 and $366.77.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 67.8,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "JNJ",
+        "name": "JOHNSON + JOHNSON",
+        "weight": 0.963414,
+        "shares_held": 29109031.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "JNJ",
+        "last_close": 267.24,
+        "previous_close": 259.33,
+        "change_percent": 3.0502,
+        "average_volume_20d": 9174281.25,
+        "sma_20": 244.363,
+        "sma_50": 234.1318,
+        "sma_200": 219.7998,
+        "close_vs_sma_20_percent": 9.3619,
+        "close_vs_sma_50_percent": 14.1408,
+        "close_vs_sma_200_percent": 21.5834,
+        "return_5d_percent": 3.377,
+        "return_20d_percent": 14.8086,
+        "return_60d_percent": 10.7455,
+        "return_120d_percent": 27.427,
+        "low_20d": 227.5,
+        "high_20d": 269.43,
+        "low_60d": 220.37,
+        "high_60d": 269.43,
+        "atr_14": 6.6921,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 35.0,
+        "label": "partial fit",
+        "reasons": [
+          "Matched themes: Labor-supply advantage (indirect).",
+          "Healthcare scale, medtech, and productivity leverage."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "labor_supply_advantage": "indirect"
+        }
+      },
+      "technical": {
+        "score": 90.6,
+        "label": "bullish",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 70.0/70, bullish; price > 200D is true, 20D > 50D is true, 50D > 200D is true.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "70.0",
+          "momentum_true_count": "3",
+          "momentum_label": "bullish",
+          "price_points": "10.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 244.36,
+        "entry_high": 251.06,
+        "breakout_trigger": 270.1,
+        "stop_loss": 242.02,
+        "target_1": 269.43,
+        "target_2": 278.16,
+        "reward_risk": 2.03,
+        "label": "wait for pullback",
+        "notes": [
+          "Wait For Pullback: preferred entry zone is $244.36-$251.06; breakout confirmation above $270.1.",
+          "Risk exit below $242.02; target exits near $269.43 and $278.16.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 62.8,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "V",
+        "name": "VISA INC CLASS A SHARES",
+        "weight": 0.915118,
+        "shares_held": 20071155.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "V",
+        "last_close": 352.2,
+        "previous_close": 357.25,
+        "change_percent": -1.4136,
+        "average_volume_20d": 9327187.5,
+        "sma_20": 334.257,
+        "sma_50": 327.7558,
+        "sma_200": 329.0112,
+        "close_vs_sma_20_percent": 5.368,
+        "close_vs_sma_50_percent": 7.4581,
+        "close_vs_sma_200_percent": 7.048,
+        "return_5d_percent": 3.088,
+        "return_20d_percent": 8.8482,
+        "return_60d_percent": 14.2431,
+        "return_120d_percent": 2.6224,
+        "low_20d": 317.0,
+        "high_20d": 365.02,
+        "low_60d": 302.34,
+        "high_60d": 365.02,
+        "atr_14": 8.9171,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 56.0,
+        "label": "aligned",
+        "reasons": [
+          "Matched themes: Millennial spending power (direct), Labor-supply advantage (direct).",
+          "Digital payments and high-margin transaction network with operating leverage."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "millennial_spending_power": "direct",
+          "labor_supply_advantage": "direct"
+        }
+      },
+      "technical": {
+        "score": 67.3,
+        "label": "constructive",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 46.7/70, neutral; price > 200D is true, 20D > 50D is true, 50D > 200D is false.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "46.7",
+          "momentum_true_count": "2",
+          "momentum_label": "neutral",
+          "price_points": "10.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "false",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 334.26,
+        "entry_high": 343.17,
+        "breakout_trigger": 365.91,
+        "stop_loss": 331.14,
+        "target_1": 367.25,
+        "target_2": 379.29,
+        "reward_risk": 2.0,
+        "label": "wait for pullback",
+        "notes": [
+          "Wait For Pullback: preferred entry zone is $334.26-$343.17; breakout confirmation above $365.91.",
+          "Risk exit below $331.14; target exits near $367.25 and $379.29.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 61.6,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "AAPL",
+        "name": "APPLE INC",
+        "weight": 7.085744,
+        "shares_held": 177574471.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "AAPL",
+        "last_close": 310.66,
+        "previous_close": 312.66,
+        "change_percent": -0.6397,
+        "average_volume_20d": 68398670.85,
+        "sma_20": 295.04,
+        "sma_50": 295.0574,
+        "sma_200": 271.4223,
+        "close_vs_sma_20_percent": 5.2942,
+        "close_vs_sma_50_percent": 5.288,
+        "close_vs_sma_200_percent": 14.4563,
+        "return_5d_percent": 10.2648,
+        "return_20d_percent": 1.0802,
+        "return_60d_percent": 19.2599,
+        "return_120d_percent": 19.3698,
+        "low_20d": 273.75,
+        "high_20d": 317.4,
+        "low_60d": 256.66,
+        "high_60d": 317.4,
+        "atr_14": 8.8243,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 55.0,
+        "label": "aligned",
+        "reasons": [
+          "Matched themes: Millennial spending power (direct).",
+          "Premium consumer ecosystem with services, devices, wearables, and digital consumption exposure."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "millennial_spending_power": "direct"
+        }
+      },
+      "technical": {
+        "score": 67.3,
+        "label": "constructive",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 46.7/70, neutral; price > 200D is true, 20D > 50D is false, 50D > 200D is true.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "46.7",
+          "momentum_true_count": "2",
+          "momentum_label": "neutral",
+          "price_points": "10.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "false",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 295.04,
+        "entry_high": 303.86,
+        "breakout_trigger": 318.28,
+        "stop_loss": 291.97,
+        "target_1": 327.66,
+        "target_2": 339.55,
+        "reward_risk": 2.0,
+        "label": "wait for pullback",
+        "notes": [
+          "Wait For Pullback: preferred entry zone is $295.04-$303.86; breakout confirmation above $318.28.",
+          "Risk exit below $291.97; target exits near $327.66 and $339.55.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 61.1,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "AMAT",
+        "name": "APPLIED MATERIALS INC",
+        "weight": 0.726072,
+        "shares_held": 9597237.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "AMAT",
+        "last_close": 554.5,
+        "previous_close": 592.79,
+        "change_percent": -6.4593,
+        "average_volume_20d": 13239258.15,
+        "sma_20": 595.0535,
+        "sma_50": 496.9836,
+        "sma_200": 343.3272,
+        "close_vs_sma_20_percent": -6.8151,
+        "close_vs_sma_50_percent": 11.5731,
+        "close_vs_sma_200_percent": 61.5077,
+        "return_5d_percent": -20.1745,
+        "return_20d_percent": 22.4035,
+        "return_60d_percent": 39.3882,
+        "return_120d_percent": 80.4778,
+        "low_20d": 466.51,
+        "high_20d": 739.67,
+        "low_60d": 377.07,
+        "high_60d": 739.67,
+        "atr_14": 54.6286,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 40.3,
+        "label": "auto-researched",
+        "reasons": [
+          "Matched themes: Labor-supply advantage, Enterprise AI leadership.",
+          "Profile pull: sector=Technology; industry=Semiconductor Equipment & Materials; evidence: Labor-supply advantage: weak / weak (software); Enterprise AI leadership: direct / strong (semiconductor, software). Applied Materials, Inc. is an American corporation that supplies equipment, services and software for the manufacture of semiconductor (integrated circuit) chips for electronics, flat panel displays for computers, smartphones, televisions, and solar products. The company also..."
+        ],
+        "confidence": 0.92,
+        "research_status": "auto_approved",
+        "source": "Yahoo Finance company profile/search + Wikipedia summary",
+        "exposures": {}
+      },
+      "technical": {
+        "score": 80.6,
+        "label": "bullish",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 70.0/70, bullish; price > 200D is true, 20D > 50D is true, 50D > 200D is true.",
+          "Price bucket: 0.0/10; current price > 20D is false.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "70.0",
+          "momentum_true_count": "3",
+          "momentum_label": "bullish",
+          "price_points": "0.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "false",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 554.5,
+        "entry_high": 560.04,
+        "breakout_trigger": 600.52,
+        "stop_loss": 486.21,
+        "target_1": 707.71,
+        "target_2": 781.54,
+        "reward_risk": 2.0,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $554.5-$560.04; breakout confirmation above $600.52.",
+          "Risk exit below $486.21; target exits near $707.71 and $781.54.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 60.4,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "BRK.B",
+        "name": "BERKSHIRE HATHAWAY INC CL B",
+        "weight": 1.433195,
+        "shares_held": 22167905.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "BRK-B",
+        "last_close": 504.0,
+        "previous_close": 506.58,
+        "change_percent": -0.5093,
+        "average_volume_20d": 5365500.65,
+        "sma_20": 494.0985,
+        "sma_50": 484.228,
+        "sma_200": 490.3836,
+        "close_vs_sma_20_percent": 2.004,
+        "close_vs_sma_50_percent": 4.0832,
+        "close_vs_sma_200_percent": 2.7767,
+        "return_5d_percent": 1.6129,
+        "return_20d_percent": 3.2512,
+        "return_60d_percent": 3.8747,
+        "return_120d_percent": 1.0688,
+        "low_20d": 481.06,
+        "high_20d": 512.58,
+        "low_60d": 464.01,
+        "high_60d": 512.58,
+        "atr_14": 6.915,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 50.0,
+        "label": "partial fit",
+        "reasons": [
+          "Matched themes: Energy-security tailwinds (indirect), Grid and data-center demand (indirect).",
+          "Diversified ownership with energy, utility, rail, industrial, and infrastructure exposure."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "energy_security_tailwinds": "indirect",
+          "grid_data_center_demand": "indirect"
+        }
+      },
+      "technical": {
+        "score": 67.3,
+        "label": "constructive",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 46.7/70, neutral; price > 200D is true, 20D > 50D is true, 50D > 200D is false.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "46.7",
+          "momentum_true_count": "2",
+          "momentum_label": "neutral",
+          "price_points": "10.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "false",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 494.1,
+        "entry_high": 501.01,
+        "breakout_trigger": 513.27,
+        "stop_loss": 491.68,
+        "target_1": 519.68,
+        "target_2": 529.02,
+        "reward_risk": 2.0,
+        "label": "wait for pullback",
+        "notes": [
+          "Wait For Pullback: preferred entry zone is $494.1-$501.01; breakout confirmation above $513.27.",
+          "Risk exit below $491.68; target exits near $519.68 and $529.02.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 58.6,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "MA",
+        "name": "MASTERCARD INC   A",
+        "weight": 0.663933,
+        "shares_held": 9758498.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "MA",
+        "last_close": 531.62,
+        "previous_close": 533.1,
+        "change_percent": -0.2776,
+        "average_volume_20d": 4212662.7,
+        "sma_20": 501.2765,
+        "sma_50": 498.4936,
+        "sma_200": 530.5369,
+        "close_vs_sma_20_percent": 6.0532,
+        "close_vs_sma_50_percent": 6.6453,
+        "close_vs_sma_200_percent": 0.2042,
+        "return_5d_percent": 4.3128,
+        "return_20d_percent": 8.2553,
+        "return_60d_percent": 5.5702,
+        "return_120d_percent": -6.1207,
+        "low_20d": 482.0,
+        "high_20d": 543.645,
+        "low_60d": 464.52,
+        "high_60d": 543.645,
+        "atr_14": 13.2696,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 56.0,
+        "label": "aligned",
+        "reasons": [
+          "Matched themes: Millennial spending power (direct), Labor-supply advantage (direct).",
+          "Digital payments and scalable transaction network."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "millennial_spending_power": "direct",
+          "labor_supply_advantage": "direct"
+        }
+      },
+      "technical": {
+        "score": 57.3,
+        "label": "neutral",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 46.7/70, neutral; price > 200D is true, 20D > 50D is true, 50D > 200D is false.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 0.0/10; 20D > 200D is false."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "46.7",
+          "momentum_true_count": "2",
+          "momentum_label": "neutral",
+          "price_points": "10.0",
+          "moving_average_points": "0.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "false",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "false"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 501.28,
+        "entry_high": 514.55,
+        "breakout_trigger": 544.97,
+        "stop_loss": 525.89,
+        "target_1": 543.64,
+        "target_2": 543.64,
+        "reward_risk": null,
+        "label": "wait for pullback",
+        "notes": [
+          "Wait For Pullback: preferred entry zone is $501.28-$514.55; breakout confirmation above $544.97.",
+          "Risk exit below $525.89; target exits near $543.64 and $543.64.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 56.6,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "LRCX",
+        "name": "LAM RESEARCH CORP",
+        "weight": 0.675933,
+        "shares_held": 15123582.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "LRCX",
+        "last_close": 326.13,
+        "previous_close": 350.2,
+        "change_percent": -6.8732,
+        "average_volume_20d": 15015664.5,
+        "sma_20": 371.202,
+        "sma_50": 324.126,
+        "sma_200": 224.9997,
+        "close_vs_sma_20_percent": -12.1422,
+        "close_vs_sma_50_percent": 0.6183,
+        "close_vs_sma_200_percent": 44.9469,
+        "return_5d_percent": -20.6323,
+        "return_20d_percent": 7.5343,
+        "return_60d_percent": 26.0357,
+        "return_120d_percent": 47.9719,
+        "low_20d": 306.01,
+        "high_20d": 438.5,
+        "low_60d": 241.6,
+        "high_60d": 438.5,
+        "atr_14": 31.7029,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 22.0,
+        "label": "auto-researched",
+        "reasons": [
+          "Matched themes: Enterprise AI leadership.",
+          "Profile pull: sector=Technology; industry=Semiconductor Equipment & Materials; evidence: Enterprise AI leadership: indirect / moderate (semiconductor). Lam Research Corporation is an American supplier of wafer-fabrication equipment and related services to the semiconductor industry. Its products are used primarily in front-end wafer processing, which involves the steps that create the active components of semiconductor devices..."
+        ],
+        "confidence": 0.66,
+        "research_status": "auto_approved",
+        "source": "Yahoo Finance company profile/search + Wikipedia summary",
+        "exposures": {}
+      },
+      "technical": {
+        "score": 80.6,
+        "label": "bullish",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 70.0/70, bullish; price > 200D is true, 20D > 50D is true, 50D > 200D is true.",
+          "Price bucket: 0.0/10; current price > 20D is false.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "70.0",
+          "momentum_true_count": "3",
+          "momentum_label": "bullish",
+          "price_points": "0.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "false",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 326.13,
+        "entry_high": 329.39,
+        "breakout_trigger": 374.37,
+        "stop_loss": 313.03,
+        "target_1": 371.2,
+        "target_2": 378.48,
+        "reward_risk": 2.56,
+        "label": "near entry",
+        "notes": [
+          "Near Entry: preferred entry zone is $326.13-$329.39; breakout confirmation above $374.37.",
+          "Risk exit below $313.03; target exits near $371.2 and $378.48.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 51.3,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "ABBV",
+        "name": "ABBVIE INC",
+        "weight": 0.694697,
+        "shares_held": 21366422.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "ABBV",
+        "last_close": 254.65,
+        "previous_close": 254.76,
+        "change_percent": -0.0432,
+        "average_volume_20d": 9115450.45,
+        "sma_20": 236.568,
+        "sma_50": 220.7796,
+        "sma_200": 222.3731,
+        "close_vs_sma_20_percent": 7.6435,
+        "close_vs_sma_50_percent": 15.3413,
+        "close_vs_sma_200_percent": 14.5147,
+        "return_5d_percent": 0.1337,
+        "return_20d_percent": 12.0671,
+        "return_60d_percent": 19.8917,
+        "return_120d_percent": 15.729,
+        "low_20d": 215.37,
+        "high_20d": 261.64,
+        "low_60d": 190.75,
+        "high_60d": 261.64,
+        "atr_14": 7.375,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 35.0,
+        "label": "partial fit",
+        "reasons": [
+          "Matched themes: Labor-supply advantage (indirect).",
+          "Healthcare scale and specialized pharmaceutical productivity."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "labor_supply_advantage": "indirect"
+        }
+      },
+      "technical": {
+        "score": 67.3,
+        "label": "constructive",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 46.7/70, neutral; price > 200D is true, 20D > 50D is true, 50D > 200D is false.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 10.0/10; 20D > 200D is true."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "46.7",
+          "momentum_true_count": "2",
+          "momentum_label": "neutral",
+          "price_points": "10.0",
+          "moving_average_points": "10.0",
+          "price_above_200d": "true",
+          "sma_20_above_50d": "true",
+          "sma_50_above_200d": "false",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "true"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 236.57,
+        "entry_high": 243.94,
+        "breakout_trigger": 262.38,
+        "stop_loss": 233.99,
+        "target_1": 263.86,
+        "target_2": 273.81,
+        "reward_risk": 2.0,
+        "label": "wait for pullback",
+        "notes": [
+          "Wait For Pullback: preferred entry zone is $236.57-$243.94; breakout confirmation above $262.38.",
+          "Risk exit below $233.99; target exits near $263.86 and $273.81.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 51.1,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "MSFT",
+        "name": "MICROSOFT CORP",
+        "weight": 4.432956,
+        "shares_held": 89813533.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "MSFT",
+        "last_close": 388.84,
+        "previous_close": 386.74,
+        "change_percent": 0.543,
+        "average_volume_20d": 48994432.6,
+        "sma_20": 383.4985,
+        "sma_50": 406.1336,
+        "sma_200": 444.2187,
+        "close_vs_sma_20_percent": 1.3928,
+        "close_vs_sma_50_percent": -4.2581,
+        "close_vs_sma_200_percent": -12.4665,
+        "return_5d_percent": 5.4996,
+        "return_20d_percent": -6.6792,
+        "return_60d_percent": 4.2271,
+        "return_120d_percent": -18.5129,
+        "low_20d": 349.2,
+        "high_20d": 417.16,
+        "low_60d": 349.2,
+        "high_60d": 466.32,
+        "atr_14": 12.9971,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 88.0,
+        "label": "narrative leader",
+        "reasons": [
+          "Matched themes: Enterprise AI leadership (direct), Labor-supply advantage (direct), Grid and data-center demand (direct).",
+          "Cloud, enterprise software, AI tooling, productivity automation, and AI infrastructure scale."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "enterprise_ai_leadership": "direct",
+          "labor_supply_advantage": "direct",
+          "grid_data_center_demand": "direct"
+        }
+      },
+      "technical": {
+        "score": 10.6,
+        "label": "weak",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 0.0/70, bearish; price > 200D is false, 20D > 50D is false, 50D > 200D is false.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 0.0/10; 20D > 200D is false."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "0.0",
+          "momentum_true_count": "0",
+          "momentum_label": "bearish",
+          "price_points": "10.0",
+          "moving_average_points": "0.0",
+          "price_above_200d": "false",
+          "sma_20_above_50d": "false",
+          "sma_50_above_200d": "false",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "false"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 406.13,
+        "entry_high": 419.13,
+        "breakout_trigger": 419.13,
+        "stop_loss": 389.89,
+        "target_1": 471.12,
+        "target_2": 497.11,
+        "reward_risk": 1.78,
+        "label": "wait for reclaim",
+        "notes": [
+          "Wait For Reclaim: preferred entry zone is $406.13-$419.13; breakout confirmation above $419.13.",
+          "Risk exit below $389.89; target exits near $471.12 and $497.11.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 49.3,
+      "rating": "Hold",
+      "rating_reasons": [
+        "Final score is mixed using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "META",
+        "name": "META PLATFORMS INC CLASS A",
+        "weight": 2.034259,
+        "shares_held": 26552938.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "META",
+        "last_close": 615.58,
+        "previous_close": 600.29,
+        "change_percent": 2.5471,
+        "average_volume_20d": 18919335.2,
+        "sma_20": 576.4635,
+        "sma_50": 602.869,
+        "sma_200": 644.8179,
+        "close_vs_sma_20_percent": 6.7856,
+        "close_vs_sma_50_percent": 2.1084,
+        "close_vs_sma_200_percent": -4.5343,
+        "return_5d_percent": 9.417,
+        "return_20d_percent": 3.8078,
+        "return_60d_percent": -2.0385,
+        "return_120d_percent": -4.1108,
+        "low_20d": 540.18,
+        "high_20d": 628.28,
+        "low_60d": 540.18,
+        "high_60d": 691.52,
+        "atr_14": 22.865,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 78.0,
+        "label": "narrative leader",
+        "reasons": [
+          "Matched themes: Millennial spending power (direct), Enterprise AI leadership (direct), Labor-supply advantage (indirect), Grid and data-center demand (direct).",
+          "Social platforms, AI-driven advertising/productivity, models, and major AI infrastructure demand."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "millennial_spending_power": "direct",
+          "enterprise_ai_leadership": "direct",
+          "labor_supply_advantage": "indirect",
+          "grid_data_center_demand": "direct"
+        }
+      },
+      "technical": {
+        "score": 10.6,
+        "label": "weak",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 0.0/70, bearish; price > 200D is false, 20D > 50D is false, 50D > 200D is false.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 0.0/10; 20D > 200D is false."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "0.0",
+          "momentum_true_count": "0",
+          "momentum_label": "bearish",
+          "price_points": "10.0",
+          "moving_average_points": "0.0",
+          "price_above_200d": "false",
+          "sma_20_above_50d": "false",
+          "sma_50_above_200d": "false",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "false"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 644.82,
+        "entry_high": 667.68,
+        "breakout_trigger": 667.68,
+        "stop_loss": 616.24,
+        "target_1": 759.14,
+        "target_2": 804.87,
+        "reward_risk": 1.78,
+        "label": "wait for reclaim",
+        "notes": [
+          "Wait For Reclaim: preferred entry zone is $644.82-$667.68; breakout confirmation above $667.68.",
+          "Risk exit below $616.24; target exits near $759.14 and $804.87.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 44.3,
+      "rating": "Sell",
+      "rating_reasons": [
+        "Final score is weak using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "TSLA",
+        "name": "TESLA INC",
+        "weight": 1.823665,
+        "shares_held": 34040909.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "TSLA",
+        "last_close": 402.9,
+        "previous_close": 419.77,
+        "change_percent": -4.0189,
+        "average_volume_20d": 49154912.0,
+        "sma_20": 399.818,
+        "sma_50": 407.6488,
+        "sma_200": 418.4837,
+        "close_vs_sma_20_percent": 0.7708,
+        "close_vs_sma_50_percent": -1.1649,
+        "close_vs_sma_200_percent": -3.7239,
+        "return_5d_percent": -2.1707,
+        "return_20d_percent": 3.0435,
+        "return_60d_percent": 16.5731,
+        "return_120d_percent": -10.2593,
+        "low_20d": 368.6,
+        "high_20d": 432.86,
+        "low_60d": 342.74,
+        "high_60d": 453.4,
+        "atr_14": 20.3264,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 75.0,
+        "label": "narrative leader",
+        "reasons": [
+          "Matched themes: Millennial spending power (direct), Labor-supply advantage (direct), Grid and data-center demand (direct), Energy-security tailwinds (indirect).",
+          "EVs, automation, energy storage, charging infrastructure, and domestic energy/electrification themes."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "millennial_spending_power": "direct",
+          "labor_supply_advantage": "direct",
+          "grid_data_center_demand": "direct",
+          "energy_security_tailwinds": "indirect"
+        }
+      },
+      "technical": {
+        "score": 10.6,
+        "label": "weak",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 0.0/70, bearish; price > 200D is false, 20D > 50D is false, 50D > 200D is false.",
+          "Price bucket: 10.0/10; current price > 20D is true.",
+          "Moving Average bucket: 0.0/10; 20D > 200D is false."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "0.0",
+          "momentum_true_count": "0",
+          "momentum_label": "bearish",
+          "price_points": "10.0",
+          "moving_average_points": "0.0",
+          "price_above_200d": "false",
+          "sma_20_above_50d": "false",
+          "sma_50_above_200d": "false",
+          "price_above_20d": "true",
+          "sma_20_above_200d": "false"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 407.65,
+        "entry_high": 427.98,
+        "breakout_trigger": 427.98,
+        "stop_loss": 392.7,
+        "target_1": 498.52,
+        "target_2": 533.79,
+        "reward_risk": 2.0,
+        "label": "wait for reclaim",
+        "notes": [
+          "Wait For Reclaim: preferred entry zone is $407.65-$427.98; breakout confirmation above $427.98.",
+          "Risk exit below $392.7; target exits near $498.52 and $533.79.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 42.8,
+      "rating": "Sell",
+      "rating_reasons": [
+        "Final score is weak using 50% semantic and 50% technical weighting."
+      ]
+    },
+    {
+      "holding": {
+        "ticker": "WMT",
+        "name": "WALMART INC",
+        "weight": 0.74871,
+        "shares_held": 53018758.0,
+        "sector": "-"
+      },
+      "price": {
+        "ticker": "WMT",
+        "last_close": 111.54,
+        "previous_close": 110.65,
+        "change_percent": 0.8043,
+        "average_volume_20d": 24273045.5,
+        "sma_20": 116.789,
+        "sma_50": 122.21,
+        "sma_200": 117.1351,
+        "close_vs_sma_20_percent": -4.4944,
+        "close_vs_sma_50_percent": -8.7309,
+        "close_vs_sma_200_percent": -4.7766,
+        "return_5d_percent": -2.6702,
+        "return_20d_percent": -6.1743,
+        "return_60d_percent": -13.6219,
+        "return_120d_percent": -5.4505,
+        "low_20d": 107.25,
+        "high_20d": 122.94,
+        "low_60d": 107.25,
+        "high_60d": 135.16,
+        "atr_14": 2.9521,
+        "trading_days": 251,
+        "source": "Yahoo Finance chart endpoint",
+        "error": null
+      },
+      "semantic": {
+        "score": 58.0,
+        "label": "aligned",
+        "reasons": [
+          "Matched themes: Millennial spending power (direct), Labor-supply advantage (direct).",
+          "Convenience, omnichannel retail, logistics scale, automation, and household spending exposure."
+        ],
+        "confidence": 1.0,
+        "research_status": "curated",
+        "source": "Local curated semantic config",
+        "exposures": {
+          "millennial_spending_power": "direct",
+          "labor_supply_advantage": "direct"
+        }
+      },
+      "technical": {
+        "score": 23.9,
+        "label": "weak",
+        "reasons": [
+          "DeMark bucket: 0.6/10 from selected ETF DeMark score 6.0 (bearish).",
+          "Momentum bucket: 23.3/70, bearish; price > 200D is false, 20D > 50D is false, 50D > 200D is true.",
+          "Price bucket: 0.0/10; current price > 20D is false.",
+          "Moving Average bucket: 0.0/10; 20D > 200D is false."
+        ],
+        "confidence": 0.0,
+        "research_status": "unreviewed",
+        "source": "",
+        "exposures": {
+          "demark_points": "0.6",
+          "demark_source_score": "6.0",
+          "momentum_points": "23.3",
+          "momentum_true_count": "1",
+          "momentum_label": "bearish",
+          "price_points": "0.0",
+          "moving_average_points": "0.0",
+          "price_above_200d": "false",
+          "sma_20_above_50d": "false",
+          "sma_50_above_200d": "true",
+          "price_above_20d": "false",
+          "sma_20_above_200d": "false"
+        }
+      },
+      "trade_plan": {
+        "entry_low": 116.79,
+        "entry_high": 119.74,
+        "breakout_trigger": 119.74,
+        "stop_loss": 113.1,
+        "target_1": 131.55,
+        "target_2": 137.45,
+        "reward_risk": 1.78,
+        "label": "wait for reclaim",
+        "notes": [
+          "Wait For Reclaim: preferred entry zone is $116.79-$119.74; breakout confirmation above $119.74.",
+          "Risk exit below $113.1; target exits near $131.55 and $137.45.",
+          "Levels are mechanical estimates from delayed technical data, not a guaranteed fill or recommendation."
+        ]
+      },
+      "final_score": 41.0,
+      "rating": "Sell",
+      "rating_reasons": [
+        "Final score is weak using 50% semantic and 50% technical weighting."
+      ]
+    }
+  ],
+  "market_condition": {
+    "generated_at": "2026-07-07T22:24:01Z",
+    "ticker": "SPY",
+    "overall_regime": "bullish",
+    "overall_score": 63.7,
+    "summary": "Overall market condition is bullish: DeMark is bearish while market participation is bullish, technology support is bullish, defensive rotation is neutral, credit risk is bullish, and dollar/yield shock is bearish.",
+    "demark": {
+      "ticker": "SPY",
+      "score": 6.0,
+      "regime": "bearish",
+      "setup_side": "sell",
+      "setup_count": 6,
+      "countdown_side": "sell",
+      "countdown_count": 13,
+      "exhaustion": "sell countdown exhaustion",
+      "reasons": [
+        "Current setup: sell 6/9.",
+        "Current countdown: sell 13/13.",
+        "Completed sell countdown suggests structural trend exhaustion."
+      ]
+    },
+    "structural_weakness": {
+      "name": "Russell 3000 20D breadth participation",
+      "score": 82.0,
+      "regime": "bullish",
+      "reasons": [
+        "Russell 3000 stocks above their 20D moving average is 65.2%.",
+        "Breadth is in the 55-85% bull range and the recent floor held above the 40-45% high-floor zone.",
+        "Bull regime: 55-85% with a 40-45% support floor; neutral regime: 35-65% churn; bear regime: 10-45% with a 50-55% ceiling."
+      ],
+      "metrics": {
+        "russell_3000_above_20d_percent": 65.21,
+        "previous_close": 68.55,
+        "weekly_high": 73.13,
+        "weekly_low": 66.12,
+        "monthly_high": 71.92,
+        "monthly_low": 43.72
+      }
+    },
+    "technology_support": {
+      "name": "QQQ technology support",
+      "score": 100.0,
+      "regime": "bullish",
+      "reasons": [
+        "QQQ price above 200D moving average: True.",
+        "QQQ 50D moving average above 200D moving average: True.",
+        "QQQ 20D moving average above 200D moving average: True.",
+        "Technology checklist passed 3 of 3 checks."
+      ],
+      "metrics": {
+        "last_close": 709.43,
+        "sma_20": 720.433,
+        "sma_50": 711.664,
+        "sma_200": 636.1849,
+        "price_above_200d": true,
+        "sma_50_above_200d": true,
+        "sma_20_above_200d": true,
+        "true_count": 3
+      }
+    },
+    "defensive_rotation": {
+      "name": "Defensive rotation",
+      "score": 58.4,
+      "regime": "neutral",
+      "reasons": [
+        "XLU/SPY trend: 1M 1.64%, 3M -11.86%.",
+        "XLP/SPY trend: 1M 0.32%, 3M -7.53%.",
+        "Average defensive relative trend: 1M 0.98%, 3M -9.70%."
+      ],
+      "metrics": {
+        "xlu_spy_return_20d_percent": 1.643791456650194,
+        "xlu_spy_return_60d_percent": -11.864127936074317,
+        "xlp_spy_return_20d_percent": 0.3198746444608944,
+        "xlp_spy_return_60d_percent": -7.531265244744198,
+        "average_defensive_return_20d_percent": 0.9818330505555443,
+        "average_defensive_return_60d_percent": -9.697696590409258
+      }
+    },
+    "credit_risk": {
+      "name": "High yield OAS credit risk",
+      "score": 61.1,
+      "regime": "bullish",
+      "reasons": [
+        "ICE BofA US High Yield OAS is 2.72 as of July 6, 2026.",
+        "Below 3.5 is bullish; above 3.5 is bearish."
+      ],
+      "metrics": {
+        "series_id": "BAMLH0A0HYM2",
+        "observation_date": "July 6, 2026",
+        "oas": 2.72,
+        "threshold": 3.5,
+        "spread_gap": -0.78
+      }
+    },
+    "dollar_yield_shock": {
+      "name": "Dollar/yield shock",
+      "score": 0.0,
+      "regime": "bearish",
+      "reasons": [
+        "DXY is 101.12; above 100 is bearish and below 100 is bullish.",
+        "10-year Treasury yield is 4.53; above 4.5 is bearish and below 4.5 is bullish.",
+        "Both bearish makes this signal bearish; one bearish makes it neutral; both bullish makes it bullish."
+      ],
+      "metrics": {
+        "dxy": 101.122,
+        "dxy_threshold": 100.0,
+        "ten_year_yield": 4.529,
+        "ten_year_yield_threshold": 4.5
+      }
+    },
+    "fed_liquidity_notes": [
+      "Fed/liquidity regime is documented in the worksheet but not scored yet.",
+      "Next implementation should translate liquidity inputs into measurable rules."
+    ]
+  },
+  "metadata": {
+    "note": "Screening criteria are placeholders until user-defined rules are added.",
+    "prices": "included",
+    "market_condition": "included",
+    "market_condition_benchmark": "SPY",
+    "benchmark": "SPY",
+    "benchmark_return_20d_percent": 1.3775,
+    "benchmark_return_60d_percent": 9.9719,
+    "holdings_provider": "State Street",
+    "holdings_quality": "official_daily_workbook",
+    "holdings_quality_note": "Holdings and weights come from the ETF sponsor's public daily workbook."
+  }
+}

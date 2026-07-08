@@ -1,0 +1,5 @@
+{
+  "command": "python3 -m self_screener.cli screen SPY --limit 25 --prices --market",
+  "captured_at": "2026-07-07T22:24:00Z",
+  "purpose": "Golden-output parity fixture for Vercel/Supabase migration. After porting each provider/screener to the storage adapter, re-run the same command against a freshly-cleared local data/ cache and diff scoring-derived fields (semantic.score, technical.score, rating, rating_reasons, trade_plan) against this fixture for exact equality. Price-derived fields (last_close, sma_*, returns) and market_condition scores are expected to drift day-to-day since they reflect live market data as of capture time — only structural/scoring-logic equivalence should be asserted for those, not exact values."
+}

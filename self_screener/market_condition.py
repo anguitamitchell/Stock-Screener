@@ -1,16 +1,12 @@
-import json
 from dataclasses import asdict
 from datetime import datetime
-from pathlib import Path
 from typing import List, Optional, Tuple
 
 from self_screener.models import DeMarkSignal, MarketConditionReport, MarketSignal, PriceBar
 from self_screener.providers.barchart_breadth import BreadthObservation, fetch_russell_3000_above_20d
 from self_screener.providers.fred import FredObservation, fetch_fred_observation
 from self_screener.providers.yahoo_prices import fetch_price_history
-
-
-REPORT_DIR = Path("data") / "reports"
+from self_screener.storage import store
 HIGH_YIELD_OAS_SERIES_ID = "BAMLH0A0HYM2"
 HIGH_YIELD_OAS_THRESHOLD = 3.5
 DXY_THRESHOLD = 100.0
@@ -386,13 +382,10 @@ def evaluate_dollar_yield_shock(dollar_bars: List[PriceBar], treasury_yield_bars
     )
 
 
-def write_market_condition(report: MarketConditionReport) -> Path:
-    REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    path = REPORT_DIR / f"{report.ticker}_market_condition.json"
+def write_market_condition(report: MarketConditionReport) -> None:
     payload = asdict(report)
     payload["generated_at"] = report.generated_at.isoformat(timespec="seconds") + "Z"
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    return path
+    store.set_market_condition_report(report.ticker, payload, payload["generated_at"])
 
 
 def evaluate_demark(ticker: str, bars: List[PriceBar]) -> DeMarkSignal:

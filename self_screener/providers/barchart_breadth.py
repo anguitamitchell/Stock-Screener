@@ -2,11 +2,12 @@ import json
 import re
 import urllib.request
 from dataclasses import asdict, dataclass
-from pathlib import Path
 from typing import Optional
 
+from self_screener.storage import store
 
-CACHE_DIR = Path("data") / "cache" / "breadth"
+BREADTH_CACHE_MAX_AGE_SECONDS = 24 * 60 * 60
+BREADTH_SERIES_KEY = "barchart:R3TW"
 RUSSELL_3000_ABOVE_20D_SYMBOL = "$R3TW"
 RUSSELL_3000_ABOVE_20D_URL = "https://www.barchart.com/stocks/quotes/%24R3TW/overview"
 
@@ -26,22 +27,20 @@ class BreadthObservation:
 
 
 def fetch_russell_3000_above_20d(refresh: bool = False) -> BreadthObservation:
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache_path = CACHE_DIR / "R3TW.json"
-
-    if cache_path.exists() and not refresh:
-        return _read_cache(cache_path)
+    if not refresh:
+        cached = store.get_macro_observation(BREADTH_SERIES_KEY, max_age_seconds=BREADTH_CACHE_MAX_AGE_SECONDS)
+        if cached is not None:
+            return BreadthObservation(**cached)
 
     try:
         observation = _fetch_barchart_observation()
     except Exception as exc:
-        if cache_path.exists():
-            cached = _read_cache(cache_path)
-            if cached.value is not None:
-                return cached
+        cached = store.get_macro_observation_any(BREADTH_SERIES_KEY)
+        if cached is not None and cached.get("value") is not None:
+            return BreadthObservation(**cached)
         return BreadthObservation(symbol=RUSSELL_3000_ABOVE_20D_SYMBOL, error=str(exc))
 
-    _write_cache(cache_path, observation)
+    store.set_macro_observation(BREADTH_SERIES_KEY, asdict(observation))
     return observation
 
 
@@ -114,10 +113,3 @@ def _float_or_none(value) -> Optional[float]:
         return None
 
 
-def _read_cache(path: Path) -> BreadthObservation:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    return BreadthObservation(**payload)
-
-
-def _write_cache(path: Path, observation: BreadthObservation) -> None:
-    path.write_text(json.dumps(asdict(observation), indent=2) + "\n", encoding="utf-8")

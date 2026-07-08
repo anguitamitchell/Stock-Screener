@@ -1,6 +1,51 @@
-# Self Generating Screener
+# Self Generating Screener (SignalDeck)
 
-A local ETF screening dashboard foundation. The first version uses `SPY` as the starting universe, fetches ETF holdings, keeps a local cache, and produces a ranked report with semantic, technical, and market-condition scores.
+An ETF screening dashboard. The first version uses `SPY` as the starting universe, fetches ETF holdings, keeps a cache, and produces a ranked report with semantic, technical, and market-condition scores.
+
+It runs two ways:
+
+- **Hosted web app** — Vercel (Python serverless functions + static frontend) with Supabase as the persistence layer. Password-gated, multi-device, no install required.
+- **Local CLI / desktop app** — the original zero-dependency Python stdlib tool, unchanged, using the local filesystem for caching and reports.
+
+## Web App (Vercel + Supabase)
+
+Live at **https://stock-screener-nine-lime.vercel.app** — enter the admin token on the login screen to get in.
+
+**Architecture**: `api/index.py` and `api/jobs.py` are Flask apps deployed as Vercel Python serverless functions. `public/index.html` + `public/app.js` are the static frontend (the same dashboard UI as the desktop app, extracted into standalone files). A full ETF screen runs as a background job (`POST /api/jobs` → poll `GET/POST /api/jobs/:id[/continue]`) since screening 25+ holdings can exceed a single serverless function's time budget. All persistence — holdings/price/research/macro caches, screen reports, snapshot history, the review queue, and curated semantic mappings — lives in Supabase (`self_screener/storage/supabase_store.py`) instead of the local `data/` directory; the exact same `self_screener` code falls back to `self_screener/storage/local_store.py` (the local filesystem) when `SUPABASE_URL` isn't set, so the CLI and local dev both keep working without any Supabase account.
+
+### Local dev
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install -e .
+brew install uv          # required by Vercel's Python builder
+npm install -g vercel
+vercel link               # first time only
+```
+
+Set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `ADMIN_TOKEN` for the Development environment (`vercel env add <NAME> development`), then run:
+
+```bash
+./scripts/dev_server.sh   # vercel dev on port 3000, using the .venv's Python 3.12
+```
+
+### Database schema
+
+Migrations live in `supabase/migrations/`. Apply them with the Supabase CLI (`supabase link --project-ref <ref>` then `supabase db push`), then seed the curated semantic config once:
+
+```bash
+python3 scripts/seed_supabase.py
+```
+
+### Deploy
+
+```bash
+vercel deploy --prod
+```
+
+Make sure `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `ADMIN_TOKEN` are also registered for the Production environment (`vercel env add <NAME> production`) — Vercel's cloud build does **not** read `.env.local`.
 
 ## What works now
 
@@ -17,7 +62,7 @@ A local ETF screening dashboard foundation. The first version uses `SPY` as the 
 - Produce a JSON report and optional local HTML dashboard.
 - Run an interactive local app with ETF input, market backdrop, ranked table, stock drawer, source caveats, and semantic research evidence.
 
-## Quick Start
+## Local CLI Quick Start
 
 ```bash
 python3 -m self_screener.cli screen SPY --limit 25
@@ -131,13 +176,9 @@ When a matching prior snapshot exists for the same ETF and screen size, the app 
 
 The app remembers the last ETF and screen size in the browser, and shows supported recent ETF shortcuts near the run controls.
 
-The output report is written to:
+The output report is written to `data/reports/SPY_screen.json` when running via the local CLI, or to the `screen_reports` table in Supabase when running as the deployed web app (see [Web App](#web-app-vercel--supabase) above).
 
-```text
-data/reports/SPY_screen.json
-```
-
-The dashboard is written to:
+The dashboard (`--dashboard` flag, local CLI only) is written to:
 
 ```text
 data/dashboards/SPY_dashboard.html
@@ -146,25 +187,47 @@ data/dashboards/SPY_dashboard.html
 ## Project Layout
 
 ```text
+api/
+  index.py               # Vercel function: themes, curated, research, review, market, runs
+  jobs.py                # Vercel function: background screen jobs (create/poll/continue)
+public/
+  index.html              # dashboard UI (static, served by Vercel)
+  app.js                  # dashboard client logic, incl. login gate + job polling
 self_screener/
   cli.py
   dashboard.py
-  web_app.py
+  web_app.py               # legacy local desktop server, not deployed to Vercel
   models.py
   pipeline.py
+  storage/
+    base.py                # StorageAdapter interface
+    local_store.py         # filesystem backend (local dev / CLI)
+    supabase_store.py       # Supabase backend (production)
   providers/
     ssga_holdings.py
     yahoo_prices.py
+    company_research.py
+    fred.py
+    barchart_breadth.py
   screeners/
     semantic.py
     technical.py
     rating.py
+    trade_plan.py
+supabase/
+  migrations/               # schema SQL, applied via the Supabase CLI
+scripts/
+  seed_supabase.py          # one-time loader: config/semantic_themes.json -> Supabase
+  dev_server.sh             # runs `vercel dev` with the local .venv on PATH
+  check_semantic_guardrails.py
 docs/
   technical_worksheet.md
   market_condition_worksheet.md
   semantic_worksheet.md
 config/
   semantic_themes.json
+vercel.json
+requirements.txt
 ```
 
 ## Next Criteria Step

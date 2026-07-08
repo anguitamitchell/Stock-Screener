@@ -1,16 +1,15 @@
 import csv
-import json
 import re
 import time
 import urllib.parse
 import urllib.request
 from dataclasses import asdict, dataclass
 from datetime import date, timedelta
-from pathlib import Path
 from typing import Optional
 
+from self_screener.storage import store
 
-CACHE_DIR = Path("data") / "cache" / "macro"
+MACRO_CACHE_MAX_AGE_SECONDS = 24 * 60 * 60
 FRED_CSV_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv"
 GOVSPENDING_SERIES_URL = "https://govspending.org/series/{series_id}/"
 
@@ -26,22 +25,22 @@ class FredObservation:
 
 def fetch_fred_observation(series_id: str, refresh: bool = False) -> FredObservation:
     normalized = series_id.upper()
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache_path = CACHE_DIR / f"{normalized}.json"
+    series_key = f"fred:{normalized}"
 
-    if cache_path.exists() and not refresh:
-        return _read_cache(cache_path)
+    if not refresh:
+        cached = store.get_macro_observation(series_key, max_age_seconds=MACRO_CACHE_MAX_AGE_SECONDS)
+        if cached is not None:
+            return FredObservation(**cached)
 
     try:
         observation = _fetch_latest_observation_with_retry(normalized)
     except Exception as exc:
-        if cache_path.exists():
-            cached = _read_cache(cache_path)
-            if cached.value is not None:
-                return cached
+        cached = store.get_macro_observation_any(series_key)
+        if cached is not None and cached.get("value") is not None:
+            return FredObservation(**cached)
         return FredObservation(series_id=normalized, error=str(exc))
 
-    _write_cache(cache_path, observation)
+    store.set_macro_observation(series_key, asdict(observation))
     return observation
 
 
@@ -122,10 +121,3 @@ def _fetch_govspending_observation(series_id: str) -> FredObservation:
     )
 
 
-def _read_cache(path: Path) -> FredObservation:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    return FredObservation(**payload)
-
-
-def _write_cache(path: Path, observation: FredObservation) -> None:
-    path.write_text(json.dumps(asdict(observation), indent=2) + "\n", encoding="utf-8")

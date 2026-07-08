@@ -8,7 +8,10 @@ version = "0.1.0"
 description = "Local ETF narrative, technical, and market-condition screening dashboard."
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = []
+dependencies = [
+    "Flask==3.0.3",
+    "supabase==2.31.0",
+]
 
 [project.optional-dependencies]
 build = ["pyinstaller>=6.0"]

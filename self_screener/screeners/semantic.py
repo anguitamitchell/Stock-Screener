@@ -1,14 +1,10 @@
-import json
 import re
-import sys
-from pathlib import Path
 from typing import Dict, List, Optional
 
 from self_screener.models import Holding, ScreenResult
 from self_screener.providers.company_research import fetch_company_research
+from self_screener.storage import store
 
-
-THEME_CONFIG_PATH = Path("config") / "semantic_themes.json"
 RELIABLE_RESEARCH_THRESHOLD = 0.65
 
 FALLBACK_RULES = {
@@ -241,38 +237,13 @@ def screen_holding(holding: Holding, refresh: bool = False) -> ScreenResult:
 
 
 def load_theme_config() -> Dict:
-    config_path = resolved_theme_config_path()
-    if not config_path:
-        return {"themes": {}, "companies": {}}
-    return json.loads(config_path.read_text(encoding="utf-8"))
-
-
-def resolved_theme_config_path() -> Optional[Path]:
-    if THEME_CONFIG_PATH.exists():
-        return THEME_CONFIG_PATH
-
-    bundle_root = Path(getattr(sys, "_MEIPASS", ""))
-    if bundle_root:
-        bundled_path = bundle_root / "config" / "semantic_themes.json"
-        if bundled_path.exists():
-            return bundled_path
-
-    executable_root = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else None
-    if executable_root:
-        executable_path = executable_root / "config" / "semantic_themes.json"
-        if executable_path.exists():
-            return executable_path
-
-    return None
+    return store.get_theme_config()
 
 
 def theme_config_status() -> Dict:
-    path = resolved_theme_config_path()
-    return {
-        "found": path is not None,
-        "path": str(path) if path else "",
-        "write_path": str(THEME_CONFIG_PATH),
-    }
+    config = store.get_theme_config()
+    found = bool(config.get("themes") or config.get("companies"))
+    return {"found": found}
 
 
 def _load_theme_config() -> Dict:
