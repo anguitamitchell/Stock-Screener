@@ -79,7 +79,9 @@
       researchPanelTab: "review",
       activeMarketSignal: null,
       drawerMode: null,
-      sort: { key: "final", direction: "desc" }
+      sort: { key: "final", direction: "desc" },
+      view: "screener",
+      portfolio: { positions: [], trades: [], totals: null, closed: [], asOf: null, loaded: false, loading: false }
     };
     const els = {
       form: document.getElementById("runForm"),
@@ -109,7 +111,25 @@
       drawerName: document.getElementById("drawerName"),
       drawerContent: document.getElementById("drawerContent"),
       drawerClose: document.getElementById("drawerClose"),
-      quit: document.getElementById("quitAppButton")
+      quit: document.getElementById("quitAppButton"),
+      viewScreener: document.getElementById("viewScreener"),
+      viewPortfolio: document.getElementById("viewPortfolio"),
+      portfolioSummary: document.getElementById("portfolioSummary"),
+      portfolioStatus: document.getElementById("portfolioStatus"),
+      positionsBody: document.getElementById("positionsBody"),
+      tradesBody: document.getElementById("tradesBody"),
+      closedList: document.getElementById("closedList"),
+      refreshQuotes: document.getElementById("refreshQuotesButton"),
+      tradeForm: document.getElementById("tradeForm"),
+      tradeTicker: document.getElementById("tradeTicker"),
+      tradeSide: document.getElementById("tradeSide"),
+      tradeDate: document.getElementById("tradeDate"),
+      tradeShares: document.getElementById("tradeShares"),
+      tradePrice: document.getElementById("tradePrice"),
+      tradeFees: document.getElementById("tradeFees"),
+      tradeNotes: document.getElementById("tradeNotes"),
+      tradeSubmit: document.getElementById("tradeSubmit"),
+      tradeFormStatus: document.getElementById("tradeFormStatus")
     };
 
     function fmt(value, digits = 1) {
@@ -182,14 +202,279 @@
       }
     }
 
+    async function loadStoredReport(etf) {
+      // Instant boot: render the last saved screen instead of running a new
+      // one on every page load. Returns false when nothing is stored yet.
+      try {
+        const response = await apiFetch(`/api/report/${encodeURIComponent(etf)}`);
+        if (!response.ok) return false;
+        const payload = await response.json();
+        state.report = payload;
+        state.rows = payload.rated_holdings || [];
+        if (payload.market_condition) {
+          state.marketScores[payload.etf] = {
+            etf: payload.etf,
+            score: payload.market_condition.overall_score,
+            regime: payload.market_condition.overall_regime,
+            summary: payload.market_condition.summary
+          };
+        }
+        const ranAt = new Date(payload.generated_at);
+        const ranLabel = Number.isNaN(ranAt.getTime())
+          ? ""
+          : ` (last run ${ranAt.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })})`;
+        els.status.textContent = `${payload.etf}: ${state.rows.length} of ${payload.holdings_count} holdings${ranLabel}`;
+        els.snapshotStatus.textContent = snapshotText(payload);
+        render();
+        loadMarketHistory(payload.etf);
+        loadRuns(payload.etf);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function setView(view) {
+      state.view = view;
+      document.querySelectorAll(".rail-item[data-view]").forEach((item) => {
+        item.classList.toggle("active", item.dataset.view === view);
+      });
+      els.viewScreener.classList.toggle("active", view === "screener");
+      els.viewPortfolio.classList.toggle("active", view === "portfolio");
+      if (view === "portfolio" && !state.portfolio.loaded && !state.portfolio.loading) {
+        loadPortfolio();
+      }
+    }
+
+    async function loadPortfolio(refreshQuotes = false) {
+      state.portfolio.loading = true;
+      els.portfolioStatus.textContent = refreshQuotes ? "Refreshing quotes..." : "Loading portfolio...";
+      try {
+        const [positionsResponse, tradesResponse] = await Promise.all([
+          apiFetch(`/api/portfolio/positions${refreshQuotes ? "?refresh_quotes=true" : ""}`),
+          apiFetch("/api/portfolio/trades")
+        ]);
+        const positionsPayload = await positionsResponse.json();
+        const tradesPayload = await tradesResponse.json();
+        if (!positionsResponse.ok) throw new Error(positionsPayload.error || "Could not load positions");
+        if (!tradesResponse.ok) throw new Error(tradesPayload.error || "Could not load trades");
+        state.portfolio.positions = positionsPayload.positions || [];
+        state.portfolio.totals = positionsPayload.totals || null;
+        state.portfolio.closed = positionsPayload.closed || [];
+        state.portfolio.asOf = positionsPayload.as_of || null;
+        state.portfolio.trades = tradesPayload.items || [];
+        state.portfolio.loaded = true;
+        renderPortfolio();
+        const count = state.portfolio.positions.length;
+        els.portfolioStatus.textContent = count
+          ? `${count} open position${count === 1 ? "" : "s"} · quotes as of ${formatTime(state.portfolio.asOf)}`
+          : "No open positions yet.";
+      } catch (error) {
+        els.portfolioStatus.textContent = error.message;
+      } finally {
+        state.portfolio.loading = false;
+      }
+    }
+
+    function stanceTone(stance) {
+      if (stance === "stop_breached" || stance === "sell_signal") return "neg";
+      if (stance === "take_profit" || stance === "trim_or_raise_stop") return "pos";
+      return "";
+    }
+
+    function positionVerdict(position) {
+      const verdicts = (position.lots || []).map((lot) => lot.verdict).filter(Boolean);
+      if (!verdicts.length) return { label: "--", tone: "" };
+      const urgency = ["stop_breached", "sell_signal", "take_profit", "trim_or_raise_stop", "watch_downgrade", "hold", "unknown"];
+      for (const stance of urgency) {
+        const found = verdicts.find((verdict) => verdict.stance === stance);
+        if (found) return { label: found.stance_label, tone: stanceTone(stance) };
+      }
+      return { label: verdicts[0].stance_label, tone: "" };
+    }
+
+    function renderPortfolio() {
+      const totals = state.portfolio.totals;
+      if (totals && (state.portfolio.positions.length || totals.realized_pl)) {
+        els.portfolioSummary.innerHTML = `
+          <div class="summary-copy">Your portfolio at a glance — click a position for per-buy verdicts.</div>
+          <div class="summary-stat"><span>Market value</span><strong>${money(totals.market_value)}</strong></div>
+          <div class="summary-stat"><span>Cost basis</span><strong>${money(totals.cost_basis)}</strong></div>
+          <div class="summary-stat"><span>Unrealized</span><strong class="${cls(totals.unrealized_pl)}">${money(totals.unrealized_pl)}${totals.unrealized_pl_percent !== null && totals.unrealized_pl_percent !== undefined ? ` (${pct(totals.unrealized_pl_percent)})` : ""}</strong></div>
+          <div class="summary-stat"><span>Realized</span><strong class="${cls(totals.realized_pl)}">${money(totals.realized_pl)}</strong></div>`;
+      } else {
+        els.portfolioSummary.innerHTML = `<div class="summary-copy">Log your first trade to start tracking positions.</div>`;
+      }
+
+      els.positionsBody.innerHTML = state.portfolio.positions.map((position, index) => {
+        const quote = position.quote || {};
+        const verdict = positionVerdict(position);
+        return `
+          <tr data-position-index="${index}">
+            <td><strong>${escapeHtml(position.ticker)}</strong></td>
+            <td class="num">${position.shares}</td>
+            <td class="num">${money(position.avg_cost)}</td>
+            <td class="num">${money(quote.last_close)}</td>
+            <td class="num">${money(position.market_value)}</td>
+            <td class="num ${cls(position.unrealized_pl)}">${money(position.unrealized_pl)}${position.unrealized_pl_percent !== null && position.unrealized_pl_percent !== undefined ? ` (${pct(position.unrealized_pl_percent)})` : ""}</td>
+            <td class="num ${cls(position.realized_pl)}">${money(position.realized_pl)}</td>
+            <td>${position.rating_now ? `<span class="${pillClass(position.rating_now)}">${position.rating_now}</span>` : "--"}</td>
+            <td><span class="${verdict.tone}">${escapeHtml(verdict.label)}</span></td>
+          </tr>`;
+      }).join("") || `<tr><td colspan="9" class="empty-row">No open positions. Log a buy to get started.</td></tr>`;
+
+      els.positionsBody.querySelectorAll("tr[data-position-index]").forEach((row) => {
+        row.addEventListener("click", () => {
+          openPositionDrawer(state.portfolio.positions[Number(row.dataset.positionIndex)]);
+        });
+      });
+
+      els.tradesBody.innerHTML = state.portfolio.trades.map((trade) => `
+        <tr>
+          <td>${escapeHtml(trade.trade_date || "")}</td>
+          <td><strong>${escapeHtml(trade.ticker || "")}</strong></td>
+          <td class="${trade.side === "buy" ? "pos" : "neg"}">${escapeHtml(trade.side || "")}</td>
+          <td class="num">${trade.shares}</td>
+          <td class="num">${money(trade.price)}</td>
+          <td class="num">${money(trade.fees)}</td>
+          <td>${escapeHtml(trade.notes || "")}</td>
+          <td><button class="row-delete" data-trade-id="${escapeHtml(trade.id || "")}" type="button" title="Delete trade">×</button></td>
+        </tr>`).join("") || `<tr><td colspan="8" class="empty-row">No trades logged yet.</td></tr>`;
+
+      els.closedList.innerHTML = state.portfolio.closed.map((item) => `
+        <div class="watch-row">
+          <span>${escapeHtml(item.ticker)}</span>
+          <strong class="${cls(item.realized_pl)}">${money(item.realized_pl)}</strong>
+        </div>`).join("") || `<div class="empty-row">Nothing closed out yet.</div>`;
+    }
+
+    function verdictTiles(verdict) {
+      const tiles = [];
+      if (verdict.pl_percent !== null && verdict.pl_percent !== undefined) {
+        tiles.push(tradePlanTile("P&L", pct(verdict.pl_percent), verdict.pl_percent >= 0 ? "target" : "risk"));
+      }
+      if (verdict.r_multiple !== null && verdict.r_multiple !== undefined) {
+        tiles.push(tradePlanTile("R multiple", `${verdict.r_multiple}R`, verdict.r_multiple >= 0 ? "target" : "risk"));
+      }
+      if (verdict.vs_spy_percent !== null && verdict.vs_spy_percent !== undefined) {
+        tiles.push(tradePlanTile("vs SPY", pct(verdict.vs_spy_percent), verdict.vs_spy_percent >= 0 ? "target" : "risk"));
+      }
+      if (verdict.score_then !== null && verdict.score_then !== undefined && verdict.score_now !== null && verdict.score_now !== undefined) {
+        tiles.push(tradePlanTile("Score", `${fmt(verdict.score_then)} → ${fmt(verdict.score_now)}`, "entry"));
+      }
+      return tiles.join("");
+    }
+
+    function planTiles(plan) {
+      if (!plan) return "";
+      return [
+        tradePlanTile("Entry zone", priceRange(plan.entry_low, plan.entry_high), "entry"),
+        tradePlanTile("Trigger", money(plan.breakout_trigger), "trigger"),
+        tradePlanTile("Stop", money(plan.stop_loss), "risk"),
+        tradePlanTile("Target 1", money(plan.target_1), "target"),
+        tradePlanTile("Target 2", money(plan.target_2), "target"),
+        tradePlanTile("R/R", plan.reward_risk !== null && plan.reward_risk !== undefined ? `${plan.reward_risk}x` : "--", "entry")
+      ].join("");
+    }
+
+    function openPositionDrawer(position) {
+      state.drawerMode = "position";
+      state.activeMarketSignal = null;
+      renderMarket();
+      const quote = position.quote || {};
+      els.drawerTicker.textContent = "Position";
+      els.drawerName.textContent = position.ticker;
+      const lotsHtml = (position.lots || []).map((lot) => {
+        const verdict = lot.verdict || {};
+        const planSourceNote = verdict.plan_source === "latest"
+          ? "Graded against the latest plan (no snapshot existed at entry)."
+          : verdict.plan_source === "none" ? "" : "Graded against the plan in effect when you bought.";
+        return `
+          <div class="reason-box">
+            <strong>${escapeHtml(lot.trade_date || "")} · ${lot.shares_open} shares @ ${money(lot.price)}</strong>
+            <span class="num ${cls(lot.unrealized_pl)}"> ${money(lot.unrealized_pl)}${lot.unrealized_pl_percent !== null && lot.unrealized_pl_percent !== undefined ? ` (${pct(lot.unrealized_pl_percent)})` : ""}</span><br>
+            <strong>${escapeHtml(verdict.entry_label || "")}</strong> — ${escapeHtml(verdict.entry_detail || "")}<br>
+            <strong class="${stanceTone(verdict.stance)}">${escapeHtml(verdict.stance_label || "")}</strong>
+            ${(verdict.stance_reasons || []).map((reason) => `<br>· ${escapeHtml(reason)}`).join("")}
+            ${planSourceNote ? `<br><span class="muted-note">${planSourceNote}</span>` : ""}
+            <div class="metric-grid">${verdictTiles(verdict)}</div>
+            ${verdict.plan ? `<div class="metric-grid">${planTiles(verdict.plan)}</div>` : ""}
+            ${lot.notes ? `<br><span class="muted-note">Note: ${escapeHtml(lot.notes)}</span>` : ""}
+          </div>`;
+      }).join("");
+      els.drawerContent.innerHTML = `
+        <div class="detail-grid">
+          <div class="detail-card"><span>Shares</span><strong>${position.shares}</strong></div>
+          <div class="detail-card"><span>Avg cost</span><strong>${money(position.avg_cost)}</strong></div>
+          <div class="detail-card"><span>Last</span><strong>${money(quote.last_close)}</strong></div>
+          <div class="detail-card"><span>Value</span><strong>${money(position.market_value)}</strong></div>
+          <div class="detail-card"><span>Unrealized</span><strong class="${cls(position.unrealized_pl)}">${money(position.unrealized_pl)}</strong></div>
+          <div class="detail-card"><span>Realized</span><strong class="${cls(position.realized_pl)}">${money(position.realized_pl)}</strong></div>
+        </div>
+        ${lotsHtml || '<div class="reason-box">No open lots.</div>'}`;
+      els.drawer.classList.add("open");
+    }
+
+    async function submitTrade(event) {
+      event.preventDefault();
+      els.tradeSubmit.disabled = true;
+      els.tradeFormStatus.textContent = "Saving...";
+      try {
+        const response = await apiFetch("/api/portfolio/trades", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ticker: els.tradeTicker.value.trim().toUpperCase(),
+            side: els.tradeSide.value,
+            trade_date: els.tradeDate.value,
+            shares: Number(els.tradeShares.value),
+            price: Number(els.tradePrice.value),
+            fees: els.tradeFees.value ? Number(els.tradeFees.value) : 0,
+            notes: els.tradeNotes.value.trim()
+          })
+        });
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.error || "Could not save trade");
+        els.tradeFormStatus.textContent = "";
+        els.tradeTicker.value = "";
+        els.tradeShares.value = "";
+        els.tradePrice.value = "";
+        els.tradeFees.value = "";
+        els.tradeNotes.value = "";
+        await loadPortfolio();
+      } catch (error) {
+        els.tradeFormStatus.textContent = error.message;
+      } finally {
+        els.tradeSubmit.disabled = false;
+      }
+    }
+
+    async function deleteTrade(tradeId) {
+      if (!window.confirm("Delete this trade?")) return;
+      try {
+        const response = await apiFetch(`/api/portfolio/trades/${encodeURIComponent(tradeId)}`, { method: "DELETE" });
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.error || "Could not delete trade");
+        await loadPortfolio();
+      } catch (error) {
+        els.portfolioStatus.textContent = error.message;
+      }
+    }
+
     async function pollJob(jobId, etf) {
-      const POLL_INTERVAL_MS = 1500;
+      // /continue does synchronous chunk work server-side, so the next call
+      // should fire as soon as one returns — only back off when another
+      // request holds the job lock (409).
+      const LOCKED_RETRY_MS = 1500;
+      const BREATHER_MS = 250;
       while (true) {
         let job;
+        let waitMs = BREATHER_MS;
         const continueResponse = await apiFetch(`/api/jobs/${jobId}/continue`, { method: "POST" });
         if (continueResponse.status === 409) {
           const statusResponse = await apiFetch(`/api/jobs/${jobId}`);
           job = await statusResponse.json();
+          waitMs = LOCKED_RETRY_MS;
         } else {
           job = await continueResponse.json();
           if (!continueResponse.ok) throw new Error(job.error || "Screen job failed");
@@ -203,7 +488,7 @@
           : "";
         const ticker = job.progress && job.progress.current_ticker ? ` (${job.progress.current_ticker})` : "";
         els.status.textContent = `${etf}: screening ${processed}${ticker}...`;
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
       }
     }
 
@@ -1600,6 +1885,16 @@
     });
 
     els.refresh.addEventListener("click", () => runScreen(true));
+
+    document.querySelectorAll(".rail-item[data-view]").forEach((item) => {
+      item.addEventListener("click", () => setView(item.dataset.view));
+    });
+    els.refreshQuotes.addEventListener("click", () => loadPortfolio(true));
+    els.tradeForm.addEventListener("submit", submitTrade);
+    els.tradesBody.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-trade-id]");
+      if (button) deleteTrade(button.dataset.tradeId);
+    });
     els.quit.addEventListener("click", () => {
       if (!window.confirm("Log out of SignalDeck?")) return;
       clearToken();
@@ -1626,7 +1921,7 @@
       state.filter = tab.dataset.rating;
       renderTable();
     });
-    document.querySelector("thead").addEventListener("click", (event) => {
+    document.querySelector("#viewScreener thead").addEventListener("click", (event) => {
       const header = event.target.closest("th.sortable");
       if (!header) return;
       const key = header.dataset.sort;
@@ -1652,7 +1947,9 @@
       await loadThemes();
       await loadReviewQueue();
       await loadCuratedItems();
-      await runScreen(false);
+      const bootEtf = (els.etf.value.trim() || "SPY").toUpperCase();
+      const hasStoredReport = await loadStoredReport(bootEtf);
+      if (!hasStoredReport) await runScreen(false);
       await loadMarketScores(false);
     }
 

@@ -21,6 +21,7 @@ MACRO_CACHE_DIR = DATA_DIR / "cache" / "macro"
 REPORT_DIR = DATA_DIR / "reports"
 SNAPSHOT_DIR = DATA_DIR / "reports" / "snapshots"
 REVIEW_QUEUE_PATH = DATA_DIR / "review" / "semantic_review_queue.json"
+TRADES_PATH = DATA_DIR / "portfolio" / "trades.json"
 THEME_CONFIG_PATH = Path("config") / "semantic_themes.json"
 JOBS_DIR = DATA_DIR / "jobs"
 
@@ -80,6 +81,18 @@ class LocalStore(StorageAdapter):
     def set_price_snapshot(self, ticker: str, snapshot: dict) -> None:
         _write_json(PRICE_CACHE_DIR / f"{ticker}.json", {"cached_at": _now_iso(), "snapshot": snapshot})
 
+    def get_price_snapshots(self, tickers: List[str], max_age_seconds: Optional[int] = None) -> Dict[str, dict]:
+        results: Dict[str, dict] = {}
+        for ticker in tickers:
+            snapshot = self.get_price_snapshot(ticker, max_age_seconds=max_age_seconds)
+            if snapshot is not None:
+                results[ticker] = snapshot
+        return results
+
+    def set_price_snapshots(self, snapshots: Dict[str, dict]) -> None:
+        for ticker, snapshot in snapshots.items():
+            self.set_price_snapshot(ticker, snapshot)
+
     def get_price_history(self, ticker: str, max_age_seconds: Optional[int] = None) -> Optional[List[dict]]:
         payload = _read_json(PRICE_CACHE_DIR / f"{ticker}_history.json")
         if not payload:
@@ -90,6 +103,18 @@ class LocalStore(StorageAdapter):
 
     def set_price_history(self, ticker: str, bars: List[dict]) -> None:
         _write_json(PRICE_CACHE_DIR / f"{ticker}_history.json", {"cached_at": _now_iso(), "bars": bars})
+
+    def get_price_histories(self, tickers: List[str], max_age_seconds: Optional[int] = None) -> Dict[str, List[dict]]:
+        results: Dict[str, List[dict]] = {}
+        for ticker in tickers:
+            bars = self.get_price_history(ticker, max_age_seconds=max_age_seconds)
+            if bars is not None:
+                results[ticker] = bars
+        return results
+
+    def set_price_histories(self, histories: Dict[str, List[dict]]) -> None:
+        for ticker, bars in histories.items():
+            self.set_price_history(ticker, bars)
 
     # -- Company research ---------------------------------------------------
     def get_research(self, ticker: str, max_age_seconds: Optional[int] = None) -> Optional[dict]:
@@ -216,6 +241,55 @@ class LocalStore(StorageAdapter):
         config = self.get_theme_config()
         config.setdefault("companies", {})[ticker] = entry
         _write_json(THEME_CONFIG_PATH, config)
+
+    # -- Portfolio trades ------------------------------------------------------
+    def list_trades(self) -> List[dict]:
+        payload = _read_json(TRADES_PATH)
+        trades = payload.get("trades", []) if isinstance(payload, dict) else []
+        return sorted(trades, key=lambda t: (t.get("trade_date", ""), t.get("created_at", "")))
+
+    def insert_trade(self, trade: dict) -> dict:
+        trades = self.list_trades()
+        row = dict(trade)
+        row["id"] = str(uuid.uuid4())
+        row["created_at"] = _now_iso()
+        trades.append(row)
+        _write_json(TRADES_PATH, {"trades": trades})
+        return row
+
+    def delete_trade(self, trade_id: str) -> int:
+        trades = self.list_trades()
+        remaining = [t for t in trades if t.get("id") != trade_id]
+        _write_json(TRADES_PATH, {"trades": remaining})
+        return len(trades) - len(remaining)
+
+    # -- Report lookups for the portfolio verdict engine ----------------------
+    def list_screen_reports(self) -> List[dict]:
+        if not REPORT_DIR.exists():
+            return []
+        items = []
+        for path in REPORT_DIR.glob("*_screen.json"):
+            payload = _read_json(path)
+            if not payload or "report" not in payload:
+                continue
+            report = payload["report"]
+            items.append(
+                {
+                    "etf": report.get("etf") or path.stem.replace("_screen", ""),
+                    "generated_at": payload.get("generated_at", ""),
+                    "report": report,
+                }
+            )
+        return sorted(items, key=lambda item: item["generated_at"], reverse=True)
+
+    def get_snapshot_before(self, etf: str, generated_at: str) -> Optional[dict]:
+        if not SNAPSHOT_DIR.exists():
+            return None
+        for path in reversed(sorted(SNAPSHOT_DIR.glob(f"{etf}_*.json"))):
+            payload = _read_json(path)
+            if payload and payload.get("generated_at", "") <= generated_at:
+                return payload["payload"]
+        return None
 
     # -- Background screen jobs -----------------------------------------------
     def create_job(self, etf: str, params: dict) -> str:

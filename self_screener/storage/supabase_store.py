@@ -10,9 +10,14 @@ import os
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
+from postgrest.types import ReturnMethod
 from supabase import Client, create_client
 
 from self_screener.storage.base import StorageAdapter
+
+# Fire-and-forget writes skip PostgREST's default row echo, which otherwise
+# downloads every written row (screen job rows include the multi-KB cursor).
+_MINIMAL = ReturnMethod.minimal
 
 
 def _now_iso() -> str:
@@ -58,6 +63,7 @@ class SupabaseStore(StorageAdapter):
         self.client.table("holdings_cache").upsert(
             {"symbol": symbol, "holdings": holdings, "source": source, "cached_at": _now_iso()},
             on_conflict="symbol",
+            returning=_MINIMAL,
         ).execute()
 
     # -- Price snapshot / history ------------------------------------------
@@ -69,6 +75,29 @@ class SupabaseStore(StorageAdapter):
         self.client.table("price_snapshot_cache").upsert(
             {"ticker": ticker, "snapshot": snapshot, "cached_at": _now_iso()},
             on_conflict="ticker",
+            returning=_MINIMAL,
+        ).execute()
+
+    def get_price_snapshots(self, tickers: List[str], max_age_seconds: Optional[int] = None) -> Dict[str, dict]:
+        if not tickers:
+            return {}
+        rows = (
+            self.client.table("price_snapshot_cache").select("*").in_("ticker", list(tickers)).execute().data
+        )
+        results: Dict[str, dict] = {}
+        for row in rows:
+            if max_age_seconds is not None and _age_seconds(row["cached_at"]) > max_age_seconds:
+                continue
+            results[row["ticker"]] = row["snapshot"]
+        return results
+
+    def set_price_snapshots(self, snapshots: Dict[str, dict]) -> None:
+        if not snapshots:
+            return
+        now = _now_iso()
+        rows = [{"ticker": ticker, "snapshot": snapshot, "cached_at": now} for ticker, snapshot in snapshots.items()]
+        self.client.table("price_snapshot_cache").upsert(
+            rows, on_conflict="ticker", returning=_MINIMAL
         ).execute()
 
     def get_price_history(self, ticker: str, max_age_seconds: Optional[int] = None) -> Optional[List[dict]]:
@@ -79,6 +108,29 @@ class SupabaseStore(StorageAdapter):
         self.client.table("price_history_cache").upsert(
             {"ticker": ticker, "bars": bars, "cached_at": _now_iso()},
             on_conflict="ticker",
+            returning=_MINIMAL,
+        ).execute()
+
+    def get_price_histories(self, tickers: List[str], max_age_seconds: Optional[int] = None) -> Dict[str, List[dict]]:
+        if not tickers:
+            return {}
+        rows = (
+            self.client.table("price_history_cache").select("*").in_("ticker", list(tickers)).execute().data
+        )
+        results: Dict[str, List[dict]] = {}
+        for row in rows:
+            if max_age_seconds is not None and _age_seconds(row["cached_at"]) > max_age_seconds:
+                continue
+            results[row["ticker"]] = row["bars"]
+        return results
+
+    def set_price_histories(self, histories: Dict[str, List[dict]]) -> None:
+        if not histories:
+            return
+        now = _now_iso()
+        rows = [{"ticker": ticker, "bars": bars, "cached_at": now} for ticker, bars in histories.items()]
+        self.client.table("price_history_cache").upsert(
+            rows, on_conflict="ticker", returning=_MINIMAL
         ).execute()
 
     # -- Company research ---------------------------------------------------
@@ -90,6 +142,7 @@ class SupabaseStore(StorageAdapter):
         self.client.table("company_research_cache").upsert(
             {"ticker": ticker, "research": research, "cached_at": _now_iso()},
             on_conflict="ticker",
+            returning=_MINIMAL,
         ).execute()
 
     # -- Macro / breadth observations ---------------------------------------
@@ -105,6 +158,7 @@ class SupabaseStore(StorageAdapter):
         self.client.table("macro_observation_cache").upsert(
             {"series_key": series_key, "observation": observation, "cached_at": _now_iso()},
             on_conflict="series_key",
+            returning=_MINIMAL,
         ).execute()
 
     # -- Screen / market-condition reports (latest wins) ---------------------
@@ -116,6 +170,7 @@ class SupabaseStore(StorageAdapter):
         self.client.table("screen_reports").upsert(
             {"etf": etf, "report": report, "generated_at": generated_at, "updated_at": _now_iso()},
             on_conflict="etf",
+            returning=_MINIMAL,
         ).execute()
 
     def get_market_condition_report(self, ticker: str) -> Optional[dict]:
@@ -128,12 +183,14 @@ class SupabaseStore(StorageAdapter):
         self.client.table("market_condition_reports").upsert(
             {"ticker": ticker, "report": report, "generated_at": generated_at, "updated_at": _now_iso()},
             on_conflict="ticker",
+            returning=_MINIMAL,
         ).execute()
 
     # -- Screen run/snapshot history -----------------------------------------
     def save_screen_snapshot(self, etf: str, screen_size: int, generated_at: str, payload: dict) -> None:
         self.client.table("screen_snapshots").insert(
-            {"etf": etf, "screen_size": screen_size, "generated_at": generated_at, "payload": payload}
+            {"etf": etf, "screen_size": screen_size, "generated_at": generated_at, "payload": payload},
+            returning=_MINIMAL,
         ).execute()
 
     def list_screen_snapshots(self, etf: str, limit: int = 5) -> List[dict]:
@@ -188,11 +245,12 @@ class SupabaseStore(StorageAdapter):
         self.client.table("semantic_review_queue").upsert(
             {"ticker": ticker, "item": item, "updated_at": item["updated_at"]},
             on_conflict="ticker",
+            returning=_MINIMAL,
         ).execute()
 
     def promote_review_item(self, ticker: str) -> None:
         self.client.table("semantic_review_queue").update(
-            {"promoted": True, "promoted_at": _now_iso()}
+            {"promoted": True, "promoted_at": _now_iso()}, returning=_MINIMAL
         ).eq("ticker", ticker).execute()
 
     def clear_review_item(self, ticker: str) -> int:
@@ -232,7 +290,49 @@ class SupabaseStore(StorageAdapter):
                 "updated_at": _now_iso(),
             },
             on_conflict="ticker",
+            returning=_MINIMAL,
         ).execute()
+
+    # -- Portfolio trades ------------------------------------------------------
+    def list_trades(self) -> List[dict]:
+        return (
+            self.client.table("portfolio_trades")
+            .select("*")
+            .order("trade_date", desc=False)
+            .order("created_at", desc=False)
+            .execute()
+            .data
+        )
+
+    def insert_trade(self, trade: dict) -> dict:
+        return _first(self.client.table("portfolio_trades").insert(trade).execute().data)
+
+    def delete_trade(self, trade_id: str) -> int:
+        response = self.client.table("portfolio_trades").delete().eq("id", trade_id).execute()
+        return len(response.data or [])
+
+    # -- Report lookups for the portfolio verdict engine ----------------------
+    def list_screen_reports(self) -> List[dict]:
+        return (
+            self.client.table("screen_reports")
+            .select("etf, generated_at, report")
+            .order("generated_at", desc=True)
+            .execute()
+            .data
+        )
+
+    def get_snapshot_before(self, etf: str, generated_at: str) -> Optional[dict]:
+        row = _first(
+            self.client.table("screen_snapshots")
+            .select("payload")
+            .eq("etf", etf)
+            .lte("generated_at", generated_at)
+            .order("generated_at", desc=True)
+            .limit(1)
+            .execute()
+            .data
+        )
+        return row["payload"] if row else None
 
     # -- Background screen jobs -----------------------------------------------
     def create_job(self, etf: str, params: dict) -> str:
@@ -272,4 +372,4 @@ class SupabaseStore(StorageAdapter):
         return row
 
     def update_job(self, job_id: str, **fields) -> None:
-        self.client.table("screen_jobs").update(fields).eq("id", job_id).execute()
+        self.client.table("screen_jobs").update(fields, returning=_MINIMAL).eq("id", job_id).execute()

@@ -29,10 +29,24 @@ class StorageAdapter:
     def set_price_snapshot(self, ticker: str, snapshot: dict) -> None:
         raise NotImplementedError
 
+    def get_price_snapshots(self, tickers: List[str], max_age_seconds: Optional[int] = None) -> Dict[str, dict]:
+        """Bulk read; returns only the tickers with a fresh-enough cached snapshot."""
+        raise NotImplementedError
+
+    def set_price_snapshots(self, snapshots: Dict[str, dict]) -> None:
+        raise NotImplementedError
+
     def get_price_history(self, ticker: str, max_age_seconds: Optional[int] = None) -> Optional[List[dict]]:
         raise NotImplementedError
 
     def set_price_history(self, ticker: str, bars: List[dict]) -> None:
+        raise NotImplementedError
+
+    def get_price_histories(self, tickers: List[str], max_age_seconds: Optional[int] = None) -> Dict[str, List[dict]]:
+        """Bulk read; returns only the tickers with fresh-enough cached bars."""
+        raise NotImplementedError
+
+    def set_price_histories(self, histories: Dict[str, List[dict]]) -> None:
         raise NotImplementedError
 
     # -- Company research ---------------------------------------------------
@@ -98,6 +112,30 @@ class StorageAdapter:
         raise NotImplementedError
 
     def upsert_company(self, ticker: str, entry: dict) -> None:
+        raise NotImplementedError
+
+    # -- Portfolio trades ------------------------------------------------------
+    def list_trades(self) -> List[dict]:
+        """All trades, oldest first (trade_date, then created_at)."""
+        raise NotImplementedError
+
+    def insert_trade(self, trade: dict) -> dict:
+        """Stores a trade and returns the stored row (with id and created_at)."""
+        raise NotImplementedError
+
+    def delete_trade(self, trade_id: str) -> int:
+        """Returns the number of rows removed (0 or 1)."""
+        raise NotImplementedError
+
+    # -- Report lookups for the portfolio verdict engine ----------------------
+    def list_screen_reports(self) -> List[dict]:
+        """All stored latest-per-ETF screen reports, newest first:
+        [{"etf", "generated_at", "report"}]."""
+        raise NotImplementedError
+
+    def get_snapshot_before(self, etf: str, generated_at: str) -> Optional[dict]:
+        """Latest snapshot payload for this ETF at or before the given ISO
+        timestamp — the screen the user would have been looking at then."""
         raise NotImplementedError
 
     # -- Background screen jobs (execution model for long-running screens) ---

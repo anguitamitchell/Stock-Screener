@@ -1,4 +1,5 @@
 import re
+import time
 from typing import Dict, List, Optional
 
 from self_screener.models import Holding, ScreenResult
@@ -236,12 +237,31 @@ def screen_holding(holding: Holding, refresh: bool = False) -> ScreenResult:
     )
 
 
+# The theme config is read for every screened holding; a short memo keeps a
+# 25-holding screen from re-fetching the same two tables 50 times. Edits made
+# through the API land in a different serverless instance, so the TTL (not
+# invalidation) is what bounds cross-instance staleness.
+THEME_CONFIG_TTL_SECONDS = 30
+_theme_config_cache: Dict = {"value": None, "at": 0.0}
+
+
 def load_theme_config() -> Dict:
-    return store.get_theme_config()
+    now = time.monotonic()
+    if _theme_config_cache["value"] is not None and now - _theme_config_cache["at"] < THEME_CONFIG_TTL_SECONDS:
+        return _theme_config_cache["value"]
+    config = store.get_theme_config()
+    _theme_config_cache["value"] = config
+    _theme_config_cache["at"] = now
+    return config
+
+
+def invalidate_theme_config_cache() -> None:
+    _theme_config_cache["value"] = None
+    _theme_config_cache["at"] = 0.0
 
 
 def theme_config_status() -> Dict:
-    config = store.get_theme_config()
+    config = load_theme_config()
     found = bool(config.get("themes") or config.get("companies"))
     return {"found": found}
 

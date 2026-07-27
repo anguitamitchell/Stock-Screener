@@ -12,16 +12,25 @@ from self_screener.pipeline import (
     start_screen,
     _report_to_json,
 )
+from self_screener.providers.yahoo_prices import prefetch_price_snapshots
 from self_screener.storage import store
 
 app = Flask(__name__)
 
 ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN")
-# Vercel Hobby caps functions at 10s; leave headroom for response overhead.
-# Bump this (and the Function Max Duration in Vercel project settings) if
-# the account is ever upgraded to Pro (up to 300s).
-CHUNK_TIME_BUDGET_SECONDS = 7
-STALE_LOCK_SECONDS = 60
+# Fluid compute gives Hobby functions well past the old 10s ceiling (a 65s
+# production invocation has been observed to complete). The env var is the
+# rollback lever: set CHUNK_TIME_BUDGET_SECONDS=7 in Vercel if chunks ever
+# get killed, no redeploy needed.
+CHUNK_TIME_BUDGET_SECONDS = float(os.environ.get("CHUNK_TIME_BUDGET_SECONDS", "40"))
+# Must exceed the chunk budget or a live chunk's job could be stolen.
+STALE_LOCK_SECONDS = int(CHUNK_TIME_BUDGET_SECONDS) + 30
+# Progress rows are advisory UI state — writing them per holding doubles the
+# round trips in the hot loop for no benefit at a 1.5s poll interval.
+PROGRESS_WRITE_INTERVAL_SECONDS = 2.0
+# How many upcoming holdings get their price snapshots bulk-prefetched
+# (one cache read + concurrent Yahoo fetches) at the top of each chunk.
+PREFETCH_BATCH_SIZE = 40
 
 
 @app.before_request
@@ -73,15 +82,15 @@ def continue_job(job_id):
         return jsonify(_public_job(job))
 
     try:
-        _run_chunk(job)
+        job = _run_chunk(job)
     except Exception as exc:
         store.update_job(job_id, status="error", error=str(exc), locked_at=None)
+        job = {**job, "status": "error", "error": str(exc)}
 
-    job = store.get_job(job_id)
     return jsonify(_public_job(job))
 
 
-def _run_chunk(job: dict) -> None:
+def _run_chunk(job: dict) -> dict:
     job_id = job["id"]
     params = job["params"]
     deadline = time.monotonic() + CHUNK_TIME_BUDGET_SECONDS
@@ -98,16 +107,24 @@ def _run_chunk(job: dict) -> None:
     else:
         progress = deserialize_progress(cursor)
 
+    snapshot_cache = {}
+    if progress.include_prices and progress.remaining:
+        batch = [holding.ticker for holding in progress.remaining[:PREFETCH_BATCH_SIZE]]
+        snapshot_cache = prefetch_price_snapshots(batch, refresh=progress.refresh)
+
+    progress_info = job.get("progress") or {}
+    last_progress_write = time.monotonic()
     while not is_screen_complete(progress) and time.monotonic() < deadline:
-        progress = screen_next_holding(progress)
-        store.update_job(
-            job_id,
-            progress={
-                "processed": len(progress.rated),
-                "total": len(progress.rated) + len(progress.remaining),
-                "current_ticker": progress.remaining[0].ticker if progress.remaining else None,
-            },
-        )
+        progress = screen_next_holding(progress, snapshot_cache=snapshot_cache)
+        progress_info = {
+            "processed": len(progress.rated),
+            "total": len(progress.rated) + len(progress.remaining),
+            "current_ticker": progress.remaining[0].ticker if progress.remaining else None,
+        }
+        now = time.monotonic()
+        if now - last_progress_write >= PROGRESS_WRITE_INTERVAL_SECONDS:
+            store.update_job(job_id, progress=progress_info)
+            last_progress_write = now
 
     if is_screen_complete(progress):
         report = finish_screen(progress)
@@ -115,9 +132,11 @@ def _run_chunk(job: dict) -> None:
         payload["comparison"] = _compare_to_previous_snapshot(report.etf, payload)
         store.set_screen_report(report.etf, payload, payload["generated_at"])
         store.save_screen_snapshot(report.etf, len(report.rated_holdings), payload["generated_at"], payload)
-        store.update_job(job_id, status="done", result=payload, cursor=None, locked_at=None)
-    else:
-        store.update_job(job_id, cursor=serialize_progress(progress), locked_at=None)
+        store.update_job(job_id, status="done", result=payload, progress=progress_info, cursor=None, locked_at=None)
+        return {**job, "status": "done", "result": payload, "progress": progress_info, "error": None}
+
+    store.update_job(job_id, cursor=serialize_progress(progress), progress=progress_info, locked_at=None)
+    return {**job, "status": "running", "progress": progress_info}
 
 
 def _compare_to_previous_snapshot(etf: str, payload: dict) -> dict:

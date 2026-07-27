@@ -82,9 +82,17 @@ def start_screen(
     )
 
 
-def screen_next_holding(progress: ScreenProgress) -> ScreenProgress:
+def screen_next_holding(progress: ScreenProgress, snapshot_cache: Optional[dict] = None) -> ScreenProgress:
+    """snapshot_cache maps holding.ticker -> PriceSnapshot prefetched by the
+    caller (see prefetch_price_snapshots); tickers not in it fall back to the
+    normal per-ticker fetch, so passing it is purely an optimization."""
     holding = progress.remaining.pop(0)
-    price_snapshot = fetch_price_snapshot(holding.ticker, refresh=progress.refresh) if progress.include_prices else None
+    if progress.include_prices:
+        price_snapshot = (snapshot_cache or {}).get(holding.ticker)
+        if price_snapshot is None:
+            price_snapshot = fetch_price_snapshot(holding.ticker, refresh=progress.refresh)
+    else:
+        price_snapshot = None
     semantic_result = semantic.screen_holding(holding, refresh=progress.refresh)
     technical_result = technical.screen_holding(
         holding,

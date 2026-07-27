@@ -247,6 +247,63 @@
       min-width: 0;
     }
 
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .rail-item[data-view] {
+      cursor: pointer;
+      background: transparent;
+      font-size: 18px;
+      font-family: inherit;
+    }
+
+    .portfolio-toolbar {
+      grid-template-columns: auto;
+    }
+
+    .trade-form {
+      display: grid;
+      gap: 8px;
+    }
+
+    .trade-form .status {
+      min-height: 18px;
+    }
+
+    .trade-log-title {
+      margin-bottom: 10px;
+    }
+
+    .row-delete {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .row-delete:hover {
+      color: var(--red);
+      border-color: rgba(255, 101, 101, 0.46);
+    }
+
+    .empty-row {
+      color: var(--muted);
+      padding: 14px 8px;
+    }
+
+    .muted-note {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
     .hero {
       display: grid;
       grid-template-columns: 1.3fr 0.7fr;
@@ -1306,15 +1363,14 @@
   <div class="shell">
     <nav class="rail">
       <div class="logo">SD</div>
-      <div class="rail-item active">⌁</div>
-      <div class="rail-item">◇</div>
-      <div class="rail-item">◎</div>
-      <div class="rail-item">⌕</div>
+      <button class="rail-item active" data-view="screener" type="button" title="Screener">⌁</button>
+      <button class="rail-item" data-view="portfolio" type="button" title="Portfolio">◇</button>
       <div class="rail-spacer"></div>
       <button class="rail-item quit" id="quitAppButton" type="button" title="Log out">×</button>
     </nav>
 
     <main class="app">
+      <div class="view active" id="viewScreener">
       <section class="topbar">
         <div>
           <h1>SignalDeck</h1>
@@ -1430,6 +1486,100 @@
           </section>
         </aside>
       </section>
+      </div>
+
+      <div class="view" id="viewPortfolio">
+      <section class="topbar">
+        <div>
+          <h1>Portfolio</h1>
+          <div class="subtitle">Positions, trade log, and per-buy verdicts</div>
+        </div>
+        <div class="run-stack">
+          <div class="runbar portfolio-toolbar">
+            <button class="btn secondary" id="refreshQuotesButton" type="button">Refresh Quotes</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div>
+          <div class="summary-card" id="portfolioSummary">
+            <div class="summary-copy">Log your first trade to start tracking positions.</div>
+          </div>
+
+          <section class="panel table-panel">
+            <div class="tools">
+              <div>
+                <div class="status" id="portfolioStatus">Ready</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Holding</th>
+                    <th class="num">Shares</th>
+                    <th class="num">Avg Cost</th>
+                    <th class="num">Last</th>
+                    <th class="num">Value</th>
+                    <th class="num">Unrealized</th>
+                    <th class="num">Realized</th>
+                    <th>Rating</th>
+                    <th>Verdict</th>
+                  </tr>
+                </thead>
+                <tbody id="positionsBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="eyebrow trade-log-title">Trade log</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Ticker</th>
+                    <th>Side</th>
+                    <th class="num">Shares</th>
+                    <th class="num">Price</th>
+                    <th class="num">Fees</th>
+                    <th>Notes</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="tradesBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <aside class="side">
+          <section class="panel watch-panel">
+            <div class="eyebrow">Log a trade</div>
+            <form id="tradeForm" class="trade-form">
+              <input class="field" id="tradeTicker" placeholder="Ticker" aria-label="Ticker" required>
+              <select class="select" id="tradeSide" aria-label="Side">
+                <option value="buy">Buy</option>
+                <option value="sell">Sell</option>
+              </select>
+              <input class="field" id="tradeDate" type="date" aria-label="Trade date" required>
+              <input class="field" id="tradeShares" type="number" step="any" min="0" placeholder="Shares" aria-label="Shares" required>
+              <input class="field" id="tradePrice" type="number" step="any" min="0" placeholder="Price per share" aria-label="Price" required>
+              <input class="field" id="tradeFees" type="number" step="any" min="0" placeholder="Fees (optional)" aria-label="Fees">
+              <input class="field" id="tradeNotes" placeholder="Notes (optional)" aria-label="Notes">
+              <button class="btn" id="tradeSubmit" type="submit">Add Trade</button>
+              <div class="status" id="tradeFormStatus"></div>
+            </form>
+          </section>
+          <section class="panel watch-panel">
+            <div class="eyebrow">Closed positions</div>
+            <div class="watch-list" id="closedList"></div>
+          </section>
+        </aside>
+      </section>
+      </div>
     </main>
   </div>
 

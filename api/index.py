@@ -1,16 +1,27 @@
 import os
+from datetime import datetime, timezone
 
 from flask import Flask, jsonify, request
 
 from self_screener.market_condition import build_market_condition
 from self_screener.models import Holding
+from self_screener.portfolio import OversellError, apply_quote, build_positions, portfolio_totals
 from self_screener.providers.ssga_holdings import HoldingsFetchError, fetch_holdings, supported_etfs
-from self_screener.screeners.semantic import build_research_evidence, load_theme_config
+from self_screener.providers.yahoo_prices import prefetch_price_histories, prefetch_price_snapshots
+from self_screener.screeners.lot_review import review_lot
+from self_screener.screeners.semantic import (
+    build_research_evidence,
+    invalidate_theme_config_cache,
+    load_theme_config,
+)
 from self_screener.storage import store
 
 app = Flask(__name__)
 
 ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN")
+# Portfolio quotes are refreshed more aggressively than the screener's 24h
+# price cache: the held-ticker set is small and P&L should be near-live.
+QUOTE_MAX_AGE_SECONDS = 900
 
 
 @app.before_request
@@ -35,6 +46,14 @@ def themes():
 @app.get("/api/etfs")
 def etfs():
     return jsonify(supported_etfs())
+
+
+@app.get("/api/report/<etf>")
+def stored_report(etf):
+    payload = store.get_screen_report(etf.upper())
+    if payload is None:
+        return jsonify({"error": "No stored report for this ETF yet."}), 404
+    return jsonify(payload)
 
 
 @app.get("/api/curated")
@@ -144,6 +163,7 @@ def promote_review():
         },
     )
     store.promote_review_item(ticker)
+    invalidate_theme_config_cache()
     return jsonify({"ok": True, "ticker": ticker, "themes": exposures})
 
 
@@ -191,6 +211,7 @@ def save_semantic():
             "source": "Dashboard review",
         },
     )
+    invalidate_theme_config_cache()
     return jsonify({"ok": True, "ticker": ticker})
 
 
@@ -279,6 +300,176 @@ def runs():
             }
         )
     return jsonify({"items": results})
+
+
+@app.get("/api/portfolio/trades")
+def portfolio_trades():
+    return jsonify({"items": store.list_trades()})
+
+
+@app.post("/api/portfolio/trades")
+def add_portfolio_trade():
+    payload = request.get_json(force=True, silent=True) or {}
+    try:
+        trade = _validated_trade(payload)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    # Pre-validate FIFO consistency with the new trade in chronological place,
+    # so a bad sell is rejected before it's stored.
+    preview = sorted(
+        store.list_trades() + [trade],
+        key=lambda t: (t.get("trade_date", ""), t.get("created_at", "9999")),
+    )
+    try:
+        build_positions(preview)
+    except OversellError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    row = store.insert_trade(trade)
+    return jsonify({"ok": True, "trade": row}), 201
+
+
+@app.delete("/api/portfolio/trades/<trade_id>")
+def delete_portfolio_trade(trade_id):
+    trades = store.list_trades()
+    remaining = [trade for trade in trades if trade.get("id") != trade_id]
+    if len(remaining) == len(trades):
+        return jsonify({"error": "Trade not found."}), 404
+    try:
+        build_positions(remaining)
+    except OversellError as exc:
+        return jsonify({"error": f"Removing this trade would orphan a later sell: {exc}"}), 400
+
+    removed = store.delete_trade(trade_id)
+    return jsonify({"ok": True, "removed": removed})
+
+
+@app.get("/api/portfolio/positions")
+def portfolio_positions():
+    refresh_quotes = (request.args.get("refresh_quotes", "false")).lower() == "true"
+    trades = store.list_trades()
+    try:
+        positions = build_positions(trades)
+    except OversellError as exc:
+        return jsonify({"error": f"Stored trades are inconsistent: {exc}"}), 400
+
+    open_positions = [position for position in positions if position["shares"] > 0]
+    held_tickers = [position["ticker"] for position in open_positions]
+    quotes = (
+        prefetch_price_snapshots(held_tickers, refresh=refresh_quotes, max_age_seconds=QUOTE_MAX_AGE_SECONDS)
+        if held_tickers
+        else {}
+    )
+
+    # Newest stored report wins per ticker; also remember which ETF's screen
+    # covered it so entry-time snapshots come from the same screen family.
+    latest_rows, ticker_etf = {}, {}
+    for entry in store.list_screen_reports():
+        for row in entry.get("report", {}).get("rated_holdings", []):
+            ticker = row.get("holding", {}).get("ticker")
+            if ticker and ticker not in latest_rows:
+                latest_rows[ticker] = row
+                ticker_etf[ticker] = entry.get("etf")
+
+    histories = {}
+    if held_tickers:
+        try:
+            bar_lists = prefetch_price_histories(held_tickers + ["SPY"])
+            histories = {
+                ticker: [bar.__dict__ for bar in bars] for ticker, bars in bar_lists.items()
+            }
+        except Exception:
+            # vs-SPY comparisons are a nice-to-have; fall back to whatever
+            # history is already cached rather than failing the endpoint.
+            histories = store.get_price_histories(held_tickers + ["SPY"])
+    snapshot_memo = {}
+
+    def entry_row_for(ticker, trade_date):
+        etf = ticker_etf.get(ticker)
+        if not etf or not trade_date:
+            return None
+        bound = f"{trade_date}T23:59:59Z"
+        if (etf, bound) not in snapshot_memo:
+            snapshot_memo[(etf, bound)] = store.get_snapshot_before(etf, bound) or {}
+        for row in snapshot_memo[(etf, bound)].get("rated_holdings", []):
+            if row.get("holding", {}).get("ticker") == ticker:
+                return row
+        return None
+
+    for position in open_positions:
+        ticker = position["ticker"]
+        snapshot = quotes.get(ticker)
+        last_close = snapshot.last_close if snapshot and not snapshot.error else None
+        apply_quote(position, last_close)
+        position["quote"] = (
+            {
+                "last_close": snapshot.last_close,
+                "change_percent": snapshot.change_percent,
+                "error": snapshot.error,
+            }
+            if snapshot
+            else None
+        )
+        latest = latest_rows.get(ticker)
+        position["rating_now"] = latest.get("rating") if latest else None
+        position["final_score_now"] = latest.get("final_score") if latest else None
+        for lot in position["lots"]:
+            lot["verdict"] = review_lot(
+                {"price": lot["price"], "trade_date": lot["trade_date"]},
+                entry_row=entry_row_for(ticker, lot["trade_date"]),
+                latest_row=latest,
+                quote_price=last_close,
+                ticker_bars=histories.get(ticker),
+                spy_bars=histories.get("SPY"),
+            )
+
+    return jsonify(
+        {
+            "as_of": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+            "totals": portfolio_totals(positions),
+            "positions": open_positions,
+            "closed": [
+                {"ticker": position["ticker"], "realized_pl": position["realized_pl"]}
+                for position in positions
+                if position["shares"] <= 0 and position["realized_pl"]
+            ],
+        }
+    )
+
+
+def _validated_trade(payload: dict) -> dict:
+    ticker = str(payload.get("ticker", "")).upper().strip()
+    if not ticker:
+        raise ValueError("Ticker is required.")
+    side = str(payload.get("side", "")).lower().strip()
+    if side not in ("buy", "sell"):
+        raise ValueError("Side must be 'buy' or 'sell'.")
+    trade_date = str(payload.get("trade_date", "")).strip()
+    try:
+        datetime.strptime(trade_date, "%Y-%m-%d")
+    except ValueError:
+        raise ValueError("trade_date must be YYYY-MM-DD.")
+    try:
+        shares = float(payload.get("shares"))
+        price = float(payload.get("price"))
+        fees = float(payload.get("fees") or 0)
+    except (TypeError, ValueError):
+        raise ValueError("shares, price, and fees must be numbers.")
+    if shares <= 0:
+        raise ValueError("shares must be positive.")
+    if price < 0 or fees < 0:
+        raise ValueError("price and fees must not be negative.")
+    notes = str(payload.get("notes", "") or "").strip() or None
+    return {
+        "ticker": ticker,
+        "side": side,
+        "trade_date": trade_date,
+        "shares": shares,
+        "price": price,
+        "fees": fees,
+        "notes": notes,
+    }
 
 
 def _curated_items() -> list:

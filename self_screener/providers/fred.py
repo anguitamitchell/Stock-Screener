@@ -52,7 +52,7 @@ def _fetch_latest_observation_with_retry(series_id: str, attempts: int = 3) -> F
         except Exception as exc:
             last_error = exc
             if attempt < attempts - 1:
-                time.sleep(0.75 * (attempt + 1))
+                time.sleep(0.3 * (attempt + 1))
     try:
         return _fetch_govspending_observation(series_id)
     except Exception:

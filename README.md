@@ -1,6 +1,6 @@
 # Self Generating Screener (SignalDeck)
 
-An ETF screening dashboard. The first version uses `SPY` as the starting universe, fetches ETF holdings, keeps a cache, and produces a ranked report with semantic, technical, and market-condition scores.
+An ETF screening dashboard with a built-in portfolio tracker. It fetches ETF holdings, keeps a cache, and produces a ranked report with semantic, technical, and market-condition scores — and lets you log your own buys/sells to get per-purchase verdicts graded against the screener's trade plans.
 
 It runs two ways:
 
@@ -11,7 +11,19 @@ It runs two ways:
 
 Live at **https://stock-screener-nine-lime.vercel.app** — enter the admin token on the login screen to get in.
 
-**Architecture**: `api/index.py` and `api/jobs.py` are Flask apps deployed as Vercel Python serverless functions. `public/index.html` + `public/app.js` are the static frontend (the same dashboard UI as the desktop app, extracted into standalone files). A full ETF screen runs as a background job (`POST /api/jobs` → poll `GET/POST /api/jobs/:id[/continue]`) since screening 25+ holdings can exceed a single serverless function's time budget. All persistence — holdings/price/research/macro caches, screen reports, snapshot history, the review queue, and curated semantic mappings — lives in Supabase (`self_screener/storage/supabase_store.py`) instead of the local `data/` directory; the exact same `self_screener` code falls back to `self_screener/storage/local_store.py` (the local filesystem) when `SUPABASE_URL` isn't set, so the CLI and local dev both keep working without any Supabase account.
+**Architecture**: `api/index.py` and `api/jobs.py` are Flask apps deployed as Vercel Python serverless functions. `public/index.html` + `public/app.js` are the static frontend (the same dashboard UI as the desktop app, extracted into standalone files). A full ETF screen runs as a background job (`POST /api/jobs` → poll `GET/POST /api/jobs/:id[/continue]`) since screening 25+ holdings can exceed a single serverless function's time budget. All persistence — holdings/price/research/macro caches, screen reports, snapshot history, the review queue, curated semantic mappings, and the portfolio trade log — lives in Supabase (`self_screener/storage/supabase_store.py`) instead of the local `data/` directory; the exact same `self_screener` code falls back to `self_screener/storage/local_store.py` (the local filesystem) when `SUPABASE_URL` isn't set, so the CLI and local dev both keep working without any Supabase account.
+
+**Performance**: the page boots instantly from the last stored report (`GET /api/report/<etf>`) instead of re-screening on load. A warm 25-holding screen completes in a single ~1-2s job chunk; a fully cold `refresh=true` screen takes ~1 minute (concurrent price fetches, a 1h-cached market-condition report, and bulk Supabase reads/writes). The per-chunk time budget is `CHUNK_TIME_BUDGET_SECONDS` (env var, default 40) — set it to `7` in the Vercel env if long invocations ever start getting killed; no redeploy needed.
+
+### Portfolio
+
+The diamond icon in the left rail opens the Portfolio view:
+
+- **Trade log** — manually record each buy/sell (ticker, date, shares, price, fees, notes). Sells are validated against open shares before saving; deleting a buy that later sells depend on is rejected.
+- **Positions** — FIFO lot matching derives shares, average cost (fees included), market value from ~15-minute-delayed quotes, and unrealized/realized P&L per position and per lot (`self_screener/portfolio.py`).
+- **Per-buy verdicts** (`self_screener/screeners/lot_review.py`) — each open lot is graded against the trade plan that was in effect when you bought (looked up from the screen snapshot history): in the entry zone, breakout entry, chased, below the zone, or below the stop. It then gives a current stance — hold, trim at target 1, take profit at target 2, stop breached, screener-sell, or rating-downgrade watch — plus P&L %, R-multiple, score change since entry, and return vs SPY since the buy date. Tickers with no screen coverage get an explicit "no screen data" verdict.
+
+Portfolio data lives in the `portfolio_trades` table (migration `0003_portfolio_trades.sql`); everything else (positions, lots, P&L, verdicts) is derived on request.
 
 ### Local dev
 
@@ -199,6 +211,7 @@ self_screener/
   web_app.py               # legacy local desktop server, not deployed to Vercel
   models.py
   pipeline.py
+  portfolio.py              # FIFO lot matching: trades -> positions/lots/P&L
   storage/
     base.py                # StorageAdapter interface
     local_store.py         # filesystem backend (local dev / CLI)
@@ -214,12 +227,17 @@ self_screener/
     technical.py
     rating.py
     trade_plan.py
+    lot_review.py           # per-buy verdicts for the portfolio view
 supabase/
   migrations/               # schema SQL, applied via the Supabase CLI
 scripts/
   seed_supabase.py          # one-time loader: config/semantic_themes.json -> Supabase
   dev_server.sh             # runs `vercel dev` with the local .venv on PATH
   check_semantic_guardrails.py
+tests/
+  test_portfolio.py         # FIFO engine unit tests (stdlib unittest)
+  test_lot_review.py        # verdict engine unit tests
+  fixtures/                 # golden-output parity fixture
 docs/
   technical_worksheet.md
   market_condition_worksheet.md

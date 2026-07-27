@@ -1,3 +1,4 @@
+import os
 from dataclasses import asdict
 from datetime import datetime
 from typing import List, Optional, Tuple
@@ -5,25 +6,36 @@ from typing import List, Optional, Tuple
 from self_screener.models import DeMarkSignal, MarketConditionReport, MarketSignal, PriceBar
 from self_screener.providers.barchart_breadth import BreadthObservation, fetch_russell_3000_above_20d
 from self_screener.providers.fred import FredObservation, fetch_fred_observation
-from self_screener.providers.yahoo_prices import fetch_price_history
+from self_screener.providers.yahoo_prices import fetch_price_history, prefetch_price_histories
 from self_screener.storage import store
 HIGH_YIELD_OAS_SERIES_ID = "BAMLH0A0HYM2"
 HIGH_YIELD_OAS_THRESHOLD = 3.5
 DXY_THRESHOLD = 100.0
 TEN_YEAR_YIELD_THRESHOLD = 4.5
+# A finished report is reused within this window instead of being re-derived
+# from its six input series on every screen. refresh=True always bypasses it.
+MARKET_CONDITION_TTL_SECONDS = int(os.environ.get("MARKET_CONDITION_TTL_SECONDS", "3600"))
 
 
 def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> MarketConditionReport:
     symbol = ticker.upper()
-    bars = fetch_price_history(symbol, refresh=refresh)
-    spy_bars = bars if symbol == "SPY" else fetch_price_history("SPY", refresh=refresh)
+    if not refresh:
+        cached = _cached_market_condition(symbol)
+        if cached is not None:
+            return cached
+
+    histories = prefetch_price_histories(
+        [symbol, "SPY", "QQQ", "XLU", "XLP", "DX-Y.NYB", "^TNX"], refresh=refresh
+    )
+    bars = histories[symbol]
+    spy_bars = histories["SPY"]
+    tech_bars = histories["QQQ"]
+    utilities_bars = histories["XLU"]
+    staples_bars = histories["XLP"]
+    dollar_bars = histories["DX-Y.NYB"]
+    treasury_yield_bars = histories["^TNX"]
     russell_3000_above_20d = fetch_russell_3000_above_20d(refresh=refresh)
-    tech_bars = fetch_price_history("QQQ", refresh=refresh)
-    utilities_bars = fetch_price_history("XLU", refresh=refresh)
-    staples_bars = fetch_price_history("XLP", refresh=refresh)
     high_yield_oas = fetch_fred_observation(HIGH_YIELD_OAS_SERIES_ID, refresh=refresh)
-    dollar_bars = fetch_price_history("DX-Y.NYB", refresh=refresh)
-    treasury_yield_bars = fetch_price_history("^TNX", refresh=refresh)
     demark = evaluate_demark(symbol, bars)
     participation = evaluate_market_participation(russell_3000_above_20d)
     technology = evaluate_technology_support(tech_bars, spy_bars)
@@ -39,7 +51,7 @@ def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> Market
         shock,
     )
 
-    return MarketConditionReport(
+    report = MarketConditionReport(
         generated_at=datetime.utcnow(),
         ticker=symbol,
         overall_regime=overall_regime,
@@ -56,6 +68,38 @@ def build_market_condition(ticker: str = "SPY", refresh: bool = False) -> Market
             "Next implementation should translate liquidity inputs into measurable rules.",
         ],
     )
+    write_market_condition(report)
+    return report
+
+
+def _cached_market_condition(symbol: str) -> Optional[MarketConditionReport]:
+    payload = store.get_market_condition_report(symbol)
+    if not payload or not payload.get("generated_at"):
+        return None
+    generated_at = datetime.fromisoformat(payload["generated_at"].replace("Z", "+00:00")).replace(tzinfo=None)
+    if (datetime.utcnow() - generated_at).total_seconds() > MARKET_CONDITION_TTL_SECONDS:
+        return None
+    try:
+        return _report_from_payload(payload)
+    except (KeyError, TypeError):
+        return None
+
+
+def _report_from_payload(payload: dict) -> MarketConditionReport:
+    fields = dict(payload)
+    fields["generated_at"] = datetime.fromisoformat(fields["generated_at"].replace("Z", "+00:00")).replace(
+        tzinfo=None
+    )
+    fields["demark"] = DeMarkSignal(**fields["demark"])
+    for key in (
+        "structural_weakness",
+        "technology_support",
+        "defensive_rotation",
+        "credit_risk",
+        "dollar_yield_shock",
+    ):
+        fields[key] = MarketSignal(**fields[key])
+    return MarketConditionReport(**fields)
 
 
 def _combine_market_signals(

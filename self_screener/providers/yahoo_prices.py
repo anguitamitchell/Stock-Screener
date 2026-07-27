@@ -2,6 +2,7 @@ import json
 import time
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Optional
 
 from self_screener.models import PriceBar, PriceSnapshot
@@ -9,6 +10,7 @@ from self_screener.storage import store
 
 PRICE_CACHE_MAX_AGE_SECONDS = 24 * 60 * 60
 YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+PREFETCH_MAX_WORKERS = 6
 
 
 class PriceFetchError(RuntimeError):
@@ -55,6 +57,91 @@ def fetch_price_history(ticker: str, refresh: bool = False, sleep_seconds: float
     bars = _history_from_payload(payload)
     store.set_price_history(normalized, [bar.__dict__ for bar in bars])
     return bars
+
+
+def prefetch_price_snapshots(
+    tickers: List[str],
+    refresh: bool = False,
+    max_age_seconds: int = PRICE_CACHE_MAX_AGE_SECONDS,
+) -> Dict[str, PriceSnapshot]:
+    """Warm the snapshot cache for many tickers at once.
+
+    One bulk cache read, concurrent Yahoo fetches for the misses, one bulk
+    cache write. Threads only perform HTTP — every storage call stays on the
+    calling thread. Keys in the returned dict are the tickers as passed in.
+    Failed fetches produce error snapshots, matching fetch_price_snapshot.
+    """
+    normalized_by_input = {ticker: _normalize_ticker(ticker) for ticker in tickers}
+    unique = list(dict.fromkeys(normalized_by_input.values()))
+
+    cached = {} if refresh else store.get_price_snapshots(unique, max_age_seconds=max_age_seconds)
+    misses = [ticker for ticker in unique if ticker not in cached]
+
+    fetched: Dict[str, PriceSnapshot] = {}
+    if misses:
+        with ThreadPoolExecutor(max_workers=PREFETCH_MAX_WORKERS) as pool:
+            futures = {pool.submit(_fetch_chart_payload, ticker): ticker for ticker in misses}
+            for future in as_completed(futures):
+                ticker = futures[future]
+                try:
+                    fetched[ticker] = _snapshot_from_payload(ticker, future.result())
+                except Exception as exc:
+                    fetched[ticker] = PriceSnapshot(
+                        ticker=ticker,
+                        source="Yahoo Finance chart endpoint",
+                        error=str(exc),
+                    )
+        store.set_price_snapshots({ticker: snapshot.__dict__ for ticker, snapshot in fetched.items()})
+
+    results: Dict[str, PriceSnapshot] = {}
+    for original, normalized in normalized_by_input.items():
+        if normalized in fetched:
+            results[original] = fetched[normalized]
+        elif normalized in cached:
+            results[original] = _snapshot_from_cache(cached[normalized])
+    return results
+
+
+def prefetch_price_histories(
+    tickers: List[str],
+    refresh: bool = False,
+    max_age_seconds: int = PRICE_CACHE_MAX_AGE_SECONDS,
+) -> Dict[str, List[PriceBar]]:
+    """Bulk equivalent of fetch_price_history, same thread discipline as
+    prefetch_price_snapshots. Unlike snapshots, a failed history fetch raises
+    (after caching whatever succeeded), matching fetch_price_history.
+    """
+    normalized_by_input = {ticker: _normalize_ticker(ticker) for ticker in tickers}
+    unique = list(dict.fromkeys(normalized_by_input.values()))
+
+    cached = {} if refresh else store.get_price_histories(unique, max_age_seconds=max_age_seconds)
+    misses = [ticker for ticker in unique if ticker not in cached]
+
+    fetched: Dict[str, List[PriceBar]] = {}
+    first_error: Optional[Exception] = None
+    if misses:
+        with ThreadPoolExecutor(max_workers=PREFETCH_MAX_WORKERS) as pool:
+            futures = {pool.submit(_fetch_chart_payload, ticker): ticker for ticker in misses}
+            for future in as_completed(futures):
+                ticker = futures[future]
+                try:
+                    fetched[ticker] = _history_from_payload(future.result())
+                except Exception as exc:
+                    if first_error is None:
+                        first_error = exc
+        store.set_price_histories(
+            {ticker: [bar.__dict__ for bar in bars] for ticker, bars in fetched.items()}
+        )
+        if first_error is not None:
+            raise first_error
+
+    results: Dict[str, List[PriceBar]] = {}
+    for original, normalized in normalized_by_input.items():
+        if normalized in fetched:
+            results[original] = fetched[normalized]
+        elif normalized in cached:
+            results[original] = [PriceBar(**bar) for bar in cached[normalized]]
+    return results
 
 
 def _fetch_chart_payload(ticker: str) -> Dict:
